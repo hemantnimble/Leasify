@@ -352,9 +352,12 @@ export default function LeaseDetailPage() {
             leaseId={lease.id}
             contractAddress={lease.contractAddress!}
             status={lease.status}
-            startDate={lease.startDate}
+            // startDate={lease.startDate}
             endDate={lease.endDate}
             role={role || ""}
+            walletAddress={walletAddress || ""}        // ✅ new
+            landlordWallet={lease.landlord.walletAddress}  // ✅ new
+            tenantWallet={lease.tenant.walletAddress}      // ✅ new
             onSuccess={() => {
               fetchLease();
               if (lease.contractAddress) {

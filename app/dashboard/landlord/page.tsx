@@ -127,6 +127,24 @@ export default function LandlordDashboard() {
             </Link>
           )}
 
+        {/* Active Leases Link */}
+        {activeLeases > 0 && (
+          <Link
+            href="/dashboard/landlord/leases"
+            className="flex items-center justify-between bg-green-900/20 border border-green-800/40 rounded-2xl p-5 mb-6 hover:border-green-700 transition-colors"
+          >
+            <div>
+              <p className="text-green-400 font-semibold">
+                Active Leases
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                {activeLeases} lease{activeLeases === 1 ? "" : "s"} currently running
+              </p>
+            </div>
+            <span className="text-green-400 text-2xl">→</span>
+          </Link>
+        )}
+
         {/* Properties Grid */}
         {isLoading ? (
           <div className="text-center py-20 text-gray-500">Loading properties...</div>
