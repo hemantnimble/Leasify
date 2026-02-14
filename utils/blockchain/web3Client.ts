@@ -3,30 +3,44 @@
 "use client";
 
 import Web3 from "web3";
-import { LEASE_FACTORY_ABI, LEASE_AGREEMENT_ABI, LEASE_FACTORY_ADDRESS } from "./abis";
+import {
+  LEASE_FACTORY_ABI,
+  LEASE_AGREEMENT_ABI,
+  LEASE_FACTORY_ADDRESS,
+} from "./abis";
 
-// ─── Client-side Web3 (uses MetaMask) ───
-
+// ── Get Web3 from ANY connected wallet (not just MetaMask) ──
 export function getClientWeb3(): Web3 {
-  if (typeof window === "undefined" || !window.ethereum) {
-    throw new Error("MetaMask not found");
+  if (typeof window === "undefined") {
+    throw new Error("Not in browser environment");
   }
-  return new Web3(window.ethereum as any);
+
+  // wagmi/RainbowKit injects the provider into window.ethereum
+  // for the currently connected wallet — works for ALL wallets
+  const provider = (window as any).ethereum;
+
+  if (!provider) {
+    throw new Error(
+      "No wallet connected. Please connect your wallet first."
+    );
+  }
+
+  return new Web3(provider);
 }
 
-// ─── Get connected wallet address ───
-
+// ── Get connected address ──
 export async function getConnectedAddress(): Promise<string> {
-  const web3 = getClientWeb3();
+  const web3     = getClientWeb3();
   const accounts = await web3.eth.getAccounts();
+
   if (!accounts || accounts.length === 0) {
     throw new Error("No wallet connected");
   }
+
   return web3.utils.toChecksumAddress(accounts[0]);
 }
 
-// ─── Get LeaseFactory contract (client side) ───
-
+// ── Get LeaseFactory contract ──
 export function getClientFactoryContract() {
   const web3 = getClientWeb3();
   return new web3.eth.Contract(
@@ -35,8 +49,7 @@ export function getClientFactoryContract() {
   );
 }
 
-// ─── Get LeaseAgreement contract (client side) ───
-
+// ── Get LeaseAgreement contract ──
 export function getClientLeaseContract(contractAddress: string) {
   const web3 = getClientWeb3();
   return new web3.eth.Contract(
@@ -45,38 +58,27 @@ export function getClientLeaseContract(contractAddress: string) {
   );
 }
 
-// ─── Switch network to Sepolia if needed ───
-
+// ── Switch to Sepolia ──
 export async function ensureSepoliaNetwork(): Promise<void> {
-  if (!window.ethereum) throw new Error("MetaMask not found");
+  const provider = (window as any).ethereum;
+  if (!provider) throw new Error("No wallet connected");
 
-  const chainId = await window.ethereum.request({ method: "eth_chainId" });
+  const chainId = await provider.request({ method: "eth_chainId" });
 
   if (chainId !== "0xaa36a7") {
-    // 0xaa36a7 = 11155111 = Sepolia
-    try {
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0xaa36a7" }],
-      });
-    } catch (error: any) {
-      throw new Error(
-        "Please switch to Sepolia network in MetaMask"
-      );
-    }
+    await provider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: "0xaa36a7" }],
+    });
   }
 }
 
-
-// utils/blockchain/web3Client.ts
-// Add this new function at the bottom:
-
-export async function getTerminationStatus(contractAddress: string): Promise<{
-  landlordAgreed: boolean;
-  tenantAgreed: boolean;
-}> {
+// ── Read termination flags ──
+export async function getTerminationStatus(
+  contractAddress: string
+): Promise<{ landlordAgreed: boolean; tenantAgreed: boolean }> {
   try {
-    const web3 = getClientWeb3();
+    const web3     = getClientWeb3();
     const contract = new web3.eth.Contract(
       LEASE_AGREEMENT_ABI as any,
       contractAddress
@@ -84,12 +86,12 @@ export async function getTerminationStatus(contractAddress: string): Promise<{
 
     const [landlordAgreed, tenantAgreed] = await Promise.all([
       contract.methods.landlordAgreesToTerminate().call() as Promise<boolean>,
-      contract.methods.tenantAgreesToTerminate().call() as Promise<boolean>,
+      contract.methods.tenantAgreesToTerminate().call()   as Promise<boolean>,
     ]);
 
     return {
       landlordAgreed: Boolean(landlordAgreed),
-      tenantAgreed: Boolean(tenantAgreed),
+      tenantAgreed:   Boolean(tenantAgreed),
     };
   } catch {
     return { landlordAgreed: false, tenantAgreed: false };
