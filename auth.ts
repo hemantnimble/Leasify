@@ -1,18 +1,18 @@
-// auth.ts  ← root of project, same level as package.json
+// auth.ts
 
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { SiweMessage } from "siwe";
 import { prisma } from "@/lib/prisma";
-import Web3 from "web3";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Ethereum",
       credentials: {
-        message: { label: "Message", type: "text" },
+        message:   { label: "Message",   type: "text" },
         signature: { label: "Signature", type: "text" },
+        role:      { label: "Role",      type: "text" }, // 👈 new
       },
 
       async authorize(credentials) {
@@ -21,7 +21,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          // Parse and verify the SIWE message
           const siweMessage = new SiweMessage(
             JSON.parse(credentials.message as string)
           );
@@ -30,33 +29,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             signature: credentials.signature as string,
           });
 
-          if (!result.success) {
-            return null;
-          }
+          if (!result.success) return null;
 
-          // ✅ FIX: convert to EIP-55 checksum address instead of lowercase
-          const web3 = new Web3();
-          const walletAddress = web3.utils.toChecksumAddress(siweMessage.address);
+          const walletAddress = siweMessage.address.toLowerCase();
 
-          // Find or create user in MongoDB
+          // Validate incoming role, fallback to TENANT
+          const incomingRole =
+            credentials.role === "LANDLORD" ? "LANDLORD" : "TENANT";
+
           let user = await prisma.user.findUnique({
             where: { walletAddress },
           });
 
           if (!user) {
+            // NEW user — assign role from login page
             user = await prisma.user.create({
               data: {
                 walletAddress,
-                role: "TENANT",
+                role: incomingRole, // 👈 use passed role
               },
             });
           }
+          // Existing user — keep their stored role, never overwrite
 
           return {
             id: user.id,
             walletAddress: user.walletAddress,
             role: user.role,
-            name: user.displayName ?? user.walletAddress.slice(0, 6) + "...",
+            name: user.displayName ?? walletAddress.slice(0, 6) + "...",
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -66,9 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
 
-  session: {
-    strategy: "jwt",
-  },
+  session: { strategy: "jwt" },
 
   callbacks: {
     async jwt({ token, user }) {

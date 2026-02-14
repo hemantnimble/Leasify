@@ -12,7 +12,9 @@ export function useWalletAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const connectWallet = async () => {
+  // hooks/useWalletAuth.ts
+
+  const connectWallet = async (role: "LANDLORD" | "TENANT" = "TENANT") => {
     setIsLoading(true);
     setError(null);
 
@@ -26,7 +28,7 @@ export function useWalletAuth() {
         method: "eth_requestAccounts",
       });
 
-      // ✅ THE FIX: convert to EIP-55 checksum address
+      // ✅ FIX: convert to EIP-55 checksummed address
       const address = web3.utils.toChecksumAddress(accounts[0]);
 
       const nonceRes = await fetch("/api/auth/nonce");
@@ -34,8 +36,8 @@ export function useWalletAuth() {
 
       const message = new SiweMessage({
         domain: window.location.host,
-        address, // ✅ now checksummed
-        statement: "Sign in to Leasify with your Ethereum wallet.",
+        address,                    // ✅ now checksummed e.g. 0x0F5D40...
+        statement: `Sign in to Leasify as ${role}.`,
         uri: window.location.origin,
         version: "1",
         chainId: 11155111,
@@ -53,6 +55,7 @@ export function useWalletAuth() {
       const result = await signIn("credentials", {
         message: JSON.stringify(message),
         signature,
+        role,
         redirect: false,
       });
 

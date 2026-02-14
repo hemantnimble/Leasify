@@ -50,18 +50,15 @@ model User {
   walletAddress String    @unique
   role          UserRole  @default(TENANT)
   displayName   String?
-  email         String?   @unique
+  email         String?   // ← REMOVE @unique from here
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  // Relations
-  properties    Property[]   @relation("LandlordProperties")
-  leasesAsLandlord Lease[]   @relation("LandlordLeases")
-  leasesAsTenant   Lease[]   @relation("TenantLeases")
-
-  // NextAuth required fields
   sessions      Session[]
   accounts      Account[]
+  properties    Property[]       @relation("LandlordProperties")
+  leasesAsLandlord Lease[]      @relation("LandlordLeases")
+  leasesAsTenant   Lease[]      @relation("TenantLeases")
 }
 
 model Property {
