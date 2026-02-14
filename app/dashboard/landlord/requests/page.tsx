@@ -39,6 +39,8 @@ export default function LandlordRequestsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"PENDING" | "ALL">("PENDING");
   const [processingId, setProcessingId] = useState<string | null>(null);
+  // const [processingId, setProcessingId] = useState<string | null>(null);
+  const [processingStep, setProcessingStep] = useState<string>("");
 
   const fetchLeases = async () => {
     try {
@@ -62,19 +64,35 @@ export default function LandlordRequestsPage() {
 
   const handleAccept = async (leaseId: string) => {
     setProcessingId(leaseId);
+    setProcessingStep("Accepting lease...");
+
     try {
+      setProcessingStep("Deploying smart contract on Sepolia...");
+
       const res = await fetch("/api/lease/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leaseId }),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+
+      if (!res.ok) throw new Error(data.error || "Failed to accept");
+
+      setProcessingStep("Done!");
+
+      // Show contract address briefly before refreshing
+      alert(
+        `✅ Lease accepted!\n\nSmart contract deployed at:\n${data.contractAddress}\n\nView on Etherscan:\nhttps://sepolia.etherscan.io/address/${data.contractAddress}`
+      );
+
       fetchLeases();
+
     } catch (err: any) {
-      alert(err.message);
+      alert(`Error: ${err.message}`);
     } finally {
       setProcessingId(null);
+      setProcessingStep("");
     }
   };
 
@@ -96,6 +114,7 @@ export default function LandlordRequestsPage() {
     }
   };
 
+  
   const pendingCount = leases.filter((l) => l.status === "PENDING").length;
 
   return (
@@ -121,11 +140,10 @@ export default function LandlordRequestsPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-xl text-sm font-medium transition-colors ${
-              activeTab === tab
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 text-gray-400 hover:text-white"
-            }`}
+            className={`px-5 py-2 rounded-xl text-sm font-medium transition-colors ${activeTab === tab
+              ? "bg-blue-600 text-white"
+              : "bg-gray-800 text-gray-400 hover:text-white"
+              }`}
           >
             {tab === "PENDING" ? `Pending${pendingCount > 0 && activeTab === "PENDING" ? ` (${pendingCount})` : ""}` : "All Requests"}
           </button>
@@ -184,9 +202,8 @@ export default function LandlordRequestsPage() {
 
                   {/* Right: Status badge */}
                   <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full border flex-shrink-0 ${
-                      STATUS_COLORS[lease.status] || STATUS_COLORS.COMPLETED
-                    }`}
+                    className={`text-xs font-semibold px-3 py-1 rounded-full border flex-shrink-0 ${STATUS_COLORS[lease.status] || STATUS_COLORS.COMPLETED
+                      }`}
                   >
                     {lease.status.replace("_", " ")}
                   </span>
@@ -232,7 +249,14 @@ export default function LandlordRequestsPage() {
                       disabled={processingId === lease.id}
                       className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-green-900 disabled:cursor-not-allowed text-white font-medium py-2 rounded-xl transition-colors text-sm"
                     >
-                      {processingId === lease.id ? "Processing..." : "✓ Accept"}
+                      {processingId === lease.id ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          {processingStep || "Processing..."}
+                        </span>
+                      ) : (
+                        "✓ Accept"
+                      )}
                     </button>
                     <button
                       onClick={() => handleReject(lease.id)}
@@ -243,6 +267,15 @@ export default function LandlordRequestsPage() {
                     </button>
                   </div>
                 )}
+
+                <div className="mt-3 pt-3 border-t border-gray-800">
+                  <Link
+                    href={`/dashboard/lease/${lease.id}`}
+                    className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                  >
+                    View Full Details →
+                  </Link>
+                </div>
               </div>
             );
           })}
