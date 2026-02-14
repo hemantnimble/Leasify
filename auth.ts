@@ -10,10 +10,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     CredentialsProvider({
       name: "Ethereum",
       credentials: {
-        message:   { label: "Message",   type: "text" },
+        message: { label: "Message", type: "text" },
         signature: { label: "Signature", type: "text" },
-        role:      { label: "Role",      type: "text" }, // 👈 new
+        role: { label: "Role", type: "text" }, // 👈 new
       },
+
+      // auth.ts
+
+      // auth.ts
 
       async authorize(credentials) {
         try {
@@ -31,9 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!result.success) return null;
 
-          const walletAddress = siweMessage.address.toLowerCase();
-
-          // Validate incoming role, fallback to TENANT
+          const walletAddress = siweMessage.address;
           const incomingRole =
             credentials.role === "LANDLORD" ? "LANDLORD" : "TENANT";
 
@@ -42,15 +44,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           if (!user) {
-            // NEW user — assign role from login page
             user = await prisma.user.create({
               data: {
                 walletAddress,
-                role: incomingRole, // 👈 use passed role
+                role: incomingRole,
               },
             });
+          } else {
+            // ✅ Return mismatch as a special user object instead of throwing
+            if (user.role !== incomingRole) {
+              return {
+                id: "ROLE_MISMATCH",
+                walletAddress: "",
+                role: user.role,           // actual role stored in DB
+                name: "ROLE_MISMATCH",
+                error: `ROLE_MISMATCH:${user.role}`,  // encode the error
+              } as any;
+            }
           }
-          // Existing user — keep their stored role, never overwrite
 
           return {
             id: user.id,
@@ -58,8 +69,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: user.role,
             name: user.displayName ?? walletAddress.slice(0, 6) + "...",
           };
-        } catch (error) {
-          console.error("Auth error:", error);
+
+        } catch (error: any) {
+          console.error("Auth error:", error.message);
           return null;
         }
       },
@@ -68,9 +80,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   session: { strategy: "jwt" },
 
+  // auth.ts — callbacks section
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        // ✅ Check if this is a role mismatch signal
+        if ((user as any).error?.startsWith("ROLE_MISMATCH")) {
+          token.error = (user as any).error;
+          return token;
+        }
+
         token.walletAddress = (user as any).walletAddress;
         token.role = (user as any).role;
         token.userId = user.id;
@@ -79,7 +99,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ session, token }) {
-      if (token) {
+      // ✅ Pass error to session so frontend can read it
+      if (token.error) {
+        session.user.error = token.error as string;
+      }
+      if (token.walletAddress) {
         session.user.walletAddress = token.walletAddress as string;
         session.user.role = token.role as string;
         session.user.userId = token.userId as string;

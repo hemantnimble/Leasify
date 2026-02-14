@@ -26,10 +26,14 @@ export default function TenantLoginPage() {
         <WalletConnectButton role="TENANT" />
 
         {/* Info box */}
-        <div className="mt-6 bg-blue-900/20 border border-blue-800/40 rounded-xl p-4">
-          <p className="text-blue-400 text-xs font-medium mb-1">First time?</p>
+        <div className="mt-6 bg-blue-900/20 border border-blue-800/40 rounded-xl p-4 space-y-2">
+          <p className="text-blue-400 text-xs font-medium">First time?</p>
           <p className="text-gray-400 text-xs leading-relaxed">
             A new tenant account will be created automatically using your wallet address.
+          </p>
+          <p className="text-gray-500 text-xs leading-relaxed border-t border-blue-800/30 pt-2">
+            ⚠️ Each wallet can only be registered under one role. Use a
+            separate MetaMask wallet for your landlord account.
           </p>
         </div>
 

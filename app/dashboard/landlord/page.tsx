@@ -98,6 +98,25 @@ export default function LandlordDashboard() {
           </div>
         ))}
       </div>
+      {/* Pending Requests Alert */}
+      {properties.some((p) =>
+        p.leases.some((l) => l.status === "PENDING")
+      ) && (
+          <Link
+            href="/dashboard/landlord/requests"
+            className="flex items-center justify-between bg-yellow-900/20 border border-yellow-800/40 rounded-2xl p-5 mb-6 hover:border-yellow-700 transition-colors"
+          >
+            <div>
+              <p className="text-yellow-400 font-semibold">
+                Pending Lease Requests
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                You have tenant requests waiting for your response
+              </p>
+            </div>
+            <span className="text-yellow-400 text-2xl">→</span>
+          </Link>
+        )}
 
       {/* Properties Grid */}
       {isLoading ? (

@@ -8,6 +8,7 @@ declare module "next-auth" {
       walletAddress: string;
       role: string;
       userId: string;
+      error?: string;        // ✅ add this
     } & DefaultSession["user"];
   }
 }

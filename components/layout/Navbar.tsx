@@ -16,7 +16,7 @@ export default function Navbar() {
   return (
     <nav className="border-b border-gray-800 bg-gray-950 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
+
         {/* Logo */}
         <Link href="/" className="text-white font-bold text-xl">
           Leasify
@@ -32,12 +32,14 @@ export default function Navbar() {
           </Link>
 
           {isAuthenticated && role === "LANDLORD" && (
-            <Link
-              href="/dashboard/landlord"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
-            >
-              My Dashboard
-            </Link>
+            <>
+              <Link href="/dashboard/landlord" className="text-gray-400 hover:text-white text-sm transition-colors">
+                My Dashboard
+              </Link>
+              <Link href="/dashboard/landlord/requests" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Requests
+              </Link>
+            </>
           )}
 
           {isAuthenticated && role === "TENANT" && (
@@ -58,11 +60,10 @@ export default function Navbar() {
                 {shortAddress}
               </span>
               <span
-                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                  role === "LANDLORD"
+                className={`text-xs px-2 py-1 rounded-full font-medium ${role === "LANDLORD"
                     ? "bg-purple-900/50 text-purple-400"
                     : "bg-blue-900/50 text-blue-400"
-                }`}
+                  }`}
               >
                 {role}
               </span>

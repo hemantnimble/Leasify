@@ -10,14 +10,21 @@ interface WalletConnectButtonProps {
   role: "LANDLORD" | "TENANT";
 }
 
-export default function WalletConnectButton({ role }: WalletConnectButtonProps) {
-  const { connectWallet, isLoading, error, isAuthenticated, role: userRole } =
-    useWalletAuth();
+export default function WalletConnectButton({
+  role,
+}: WalletConnectButtonProps) {
+  const {
+    connectWallet,
+    isLoading,
+    error,
+    isAuthenticated,
+    role: userRole,
+  } = useWalletAuth();
   const router = useRouter();
 
-  // Redirect once authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    // ✅ isAuthenticated is false during mismatch — this won't fire
+    if (isAuthenticated && userRole) {
       if (userRole === "LANDLORD") {
         router.push("/dashboard/landlord");
       } else {

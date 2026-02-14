@@ -3,7 +3,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession, getSession } from "next-auth/react";
 import { SiweMessage } from "siwe";
 import Web3 from "web3";
 
@@ -12,7 +12,9 @@ export function useWalletAuth() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // hooks/useWalletAuth.ts
+  // ✅ Treat role mismatch sessions as NOT authenticated
+  const hasRoleMismatch = !!(session?.user as any)?.error?.startsWith("ROLE_MISMATCH");
+  const isAuthenticated = status === "authenticated" && !hasRoleMismatch;
 
   const connectWallet = async (role: "LANDLORD" | "TENANT" = "TENANT") => {
     setIsLoading(true);
@@ -28,7 +30,6 @@ export function useWalletAuth() {
         method: "eth_requestAccounts",
       });
 
-      // ✅ FIX: convert to EIP-55 checksummed address
       const address = web3.utils.toChecksumAddress(accounts[0]);
 
       const nonceRes = await fetch("/api/auth/nonce");
@@ -36,7 +37,7 @@ export function useWalletAuth() {
 
       const message = new SiweMessage({
         domain: window.location.host,
-        address,                    // ✅ now checksummed e.g. 0x0F5D40...
+        address,
         statement: `Sign in to Leasify as ${role}.`,
         uri: window.location.origin,
         version: "1",
@@ -60,8 +61,32 @@ export function useWalletAuth() {
       });
 
       if (result?.error) {
-        throw new Error(result.error);
+        throw new Error("Authentication failed. Please try again.");
       }
+
+      // ✅ Check session BEFORE isAuthenticated can trigger redirect
+      const freshSession = await getSession();
+      const sessionError = (freshSession?.user as any)?.error;
+
+      if (sessionError?.startsWith("ROLE_MISMATCH")) {
+        const actualRole = sessionError.split(":")[1];
+
+        // ✅ Sign out IMMEDIATELY before any redirect can happen
+        await signOut({ redirect: false });
+
+        if (actualRole === "TENANT") {
+          throw new Error(
+            "This wallet is registered as a Tenant. Please use the Tenant login page, or connect a different wallet."
+          );
+        }
+        if (actualRole === "LANDLORD") {
+          throw new Error(
+            "This wallet is registered as a Landlord. Please use the Landlord login page, or connect a different wallet."
+          );
+        }
+      }
+
+      // ✅ Only reaches here if login was genuinely successful
 
     } catch (err: any) {
       setError(err.message || "Failed to connect wallet");
@@ -81,7 +106,7 @@ export function useWalletAuth() {
     error,
     connectWallet,
     disconnectWallet,
-    isAuthenticated: status === "authenticated",
+    isAuthenticated,          // ✅ false during role mismatch
     walletAddress: session?.user?.walletAddress,
     role: session?.user?.role,
   };
