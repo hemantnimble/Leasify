@@ -1,15 +1,23 @@
-import type { Metadata } from "next";
-// import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+// app/layout.tsx
 
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import AuthSessionProvider from "@/components/providers/SessionProvider";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "Leasify",
-  description: "Blockchain-Based Rental Agreement System",
+  description: "Blockchain Rental Agreement Platform",
 };
 
 export default function RootLayout({
@@ -19,8 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body   >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AuthSessionProvider>
+          {children}
+        </AuthSessionProvider>
       </body>
     </html>
   );

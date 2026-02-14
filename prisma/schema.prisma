@@ -1,0 +1,173 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
+enum UserRole {
+  LANDLORD
+  TENANT
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  RENTED
+  UNLISTED
+}
+
+enum LeaseStatus {
+  PENDING          // Tenant requested, landlord hasn't responded
+  AWAITING_DEPOSIT // Landlord accepted, contract deployed, waiting for deposit
+  ACTIVE           // Deposit paid, lease is running
+  COMPLETED        // Lease duration ended normally
+  TERMINATED       // Both parties agreed to end early
+  REJECTED         // Landlord rejected the request
+  DISPUTED         // Something went wrong
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  LATE
+  MISSED
+}
+
+// ─────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  walletAddress String    @unique
+  role          UserRole  @default(TENANT)
+  displayName   String?
+  email         String?   @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  properties    Property[]   @relation("LandlordProperties")
+  leasesAsLandlord Lease[]   @relation("LandlordLeases")
+  leasesAsTenant   Lease[]   @relation("TenantLeases")
+
+  // NextAuth required fields
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model Property {
+  id                    String         @id @default(auto()) @map("_id") @db.ObjectId
+  landlordId            String         @db.ObjectId
+  landlord              User           @relation("LandlordProperties", fields: [landlordId], references: [id])
+  
+  title                 String
+  description           String
+  location              String
+  monthlyRent           Float          // in ETH
+  securityDeposit       Float          // in ETH
+  minimumLeaseDuration  Int            // in months
+  images                String[]       // array of image URLs
+  status                PropertyStatus @default(AVAILABLE)
+  
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  // Relations
+  leases                Lease[]
+}
+
+model Lease {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  propertyId        String      @db.ObjectId
+  property          Property    @relation(fields: [propertyId], references: [id])
+  landlordId        String      @db.ObjectId
+  landlord          User        @relation("LandlordLeases", fields: [landlordId], references: [id])
+  tenantId          String      @db.ObjectId
+  tenant            User        @relation("TenantLeases", fields: [tenantId], references: [id])
+
+  // Lease Terms
+  monthlyRent       Float       // ETH
+  securityDeposit   Float       // ETH
+  startDate         DateTime
+  endDate           DateTime
+  gracePeriodDays   Int         @default(5)
+  lateFeePercentage Float       @default(5)  // percentage
+
+  // Blockchain Data
+  contractAddress   String?     // set after contract is deployed
+  deployedAt        DateTime?
+
+  // Status
+  status            LeaseStatus @default(PENDING)
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  payments          Payment[]
+}
+
+model Payment {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  leaseId          String        @db.ObjectId
+  lease            Lease         @relation(fields: [leaseId], references: [id])
+
+  amount           Float         // ETH
+  dueDate          DateTime
+  paidAt           DateTime?
+  transactionHash  String?
+  status           PaymentStatus @default(PENDING)
+  lateFee          Float?        @default(0)
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+// ─────────────────────────────────────────
+// NEXTAUTH REQUIRED MODELS
+// ─────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

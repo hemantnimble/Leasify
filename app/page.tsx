@@ -1,11 +1,7 @@
-import Image from "next/image";
+// app/page.tsx
 
 export default function Home() {
   return (
-   <>
-   <p>lll
-    
-   </p>
-   </>
-  );
+   <p>l</p>
+  )
 }
