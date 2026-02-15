@@ -11,6 +11,7 @@ import NetworkWarning from "@/components/blockchain/NetworkWarning";
 import { getClientLeaseContract } from "@/utils/blockchain/web3Client";
 import PayRentButton from "@/components/blockchain/PayRentButton";
 import LeaseActions from "@/components/blockchain/LeaseActions";
+import { LeaseDetailSkeleton } from "@/components/ui/Skeleton";
 
 interface Lease {
   id: string;
@@ -145,6 +146,9 @@ export default function LeaseDetailPage() {
         </Link>
       </div>
     );
+  }
+  if (isLoading) {
+    return <LeaseDetailSkeleton />;
   }
 
   const isTenant = walletAddress?.toLowerCase() ===

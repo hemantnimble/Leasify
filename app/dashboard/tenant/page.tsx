@@ -1,6 +1,4 @@
 // app/dashboard/tenant/page.tsx
-// Full updated file:
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,6 +7,10 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import NetworkWarning from "@/components/blockchain/NetworkWarning";
 import PayDepositButton from "@/components/blockchain/PayDepositButton";
+import {
+  LeaseCardSkeleton,
+  DashboardStatsSkeleton,
+} from "@/components/ui/Skeleton";
 
 interface Lease {
   id: string;
@@ -123,9 +125,13 @@ function TenantDashboardContent() {
 
         {/* Leases List */}
         {isLoading ? (
-          <div className="text-center py-20 text-gray-500">
-            Loading your leases...
-          </div>
+          <>
+            <DashboardStatsSkeleton />
+            <div className="space-y-4">
+              <LeaseCardSkeleton />
+              <LeaseCardSkeleton />
+            </div>
+          </>
         ) : leases.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 text-lg">No lease requests yet</p>
@@ -224,17 +230,17 @@ function TenantDashboardContent() {
                   {/* ✅ NEW: Rent due alert — only for ACTIVE leases with a pending payment */}
                   {lease.status === "ACTIVE" && pendingPayment && rentDueDate && (
                     <div className={`mt-4 rounded-xl p-3 flex items-center justify-between ${isOverdue
-                        ? "bg-red-900/20 border border-red-800/40"
-                        : daysUntilDue !== null && daysUntilDue <= 3
-                          ? "bg-yellow-900/20 border border-yellow-800/40"
-                          : "bg-gray-800/50 border border-gray-700"
+                      ? "bg-red-900/20 border border-red-800/40"
+                      : daysUntilDue !== null && daysUntilDue <= 3
+                        ? "bg-yellow-900/20 border border-yellow-800/40"
+                        : "bg-gray-800/50 border border-gray-700"
                       }`}>
                       <div>
                         <p className={`text-xs font-medium ${isOverdue
-                            ? "text-red-400"
-                            : daysUntilDue !== null && daysUntilDue <= 3
-                              ? "text-yellow-400"
-                              : "text-gray-400"
+                          ? "text-red-400"
+                          : daysUntilDue !== null && daysUntilDue <= 3
+                            ? "text-yellow-400"
+                            : "text-gray-400"
                           }`}>
                           {isOverdue
                             ? "⚠️ Rent Overdue"

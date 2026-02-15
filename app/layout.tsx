@@ -1,9 +1,11 @@
 // app/layout.tsx
 import "@rainbow-me/rainbowkit/styles.css";  // ✅ add here
-import "./globals.css";   
-import { auth }      from "@/auth";
-import Providers     from "@/components/providers/SessionProvider";
-import Navbar        from "@/components/layout/Navbar";
+import "./globals.css";
+import { auth } from "@/auth";
+import Providers from "@/components/providers/SessionProvider";
+import Navbar from "@/components/layout/Navbar";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+
 
 export default async function RootLayout({
   children,
@@ -18,7 +20,9 @@ export default async function RootLayout({
         <Providers session={session}>
           <Navbar />
           <main className="max-w-7xl mx-auto px-6 py-8">
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </main>
         </Providers>
       </body>

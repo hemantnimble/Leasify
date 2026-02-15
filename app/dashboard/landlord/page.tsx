@@ -6,6 +6,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import PropertyCard from "@/components/property/PropertyCard";
 import NetworkWarning from "@/components/blockchain/NetworkWarning";
+import {
+  PropertyCardSkeleton,
+  DashboardStatsSkeleton,
+} from "@/components/ui/Skeleton";
+
 
 interface Property {
   id: string;
@@ -147,7 +152,14 @@ export default function LandlordDashboard() {
 
         {/* Properties Grid */}
         {isLoading ? (
-          <div className="text-center py-20 text-gray-500">Loading properties...</div>
+          <>
+            <DashboardStatsSkeleton />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <PropertyCardSkeleton />
+              <PropertyCardSkeleton />
+              <PropertyCardSkeleton />
+            </div>
+          </>
         ) : properties.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 text-lg">No properties yet</p>
