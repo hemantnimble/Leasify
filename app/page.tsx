@@ -29,38 +29,3 @@ export default function HomePage() {
     </div>
   );
 }
-// ```
-
-// ---
-
-// ## Phase 3 Final Folder Structure
-// ```
-// app/
-// ├── page.tsx                              ← Home page
-// ├── layout.tsx                            ← Updated with Navbar
-// ├── properties/
-// │   ├── page.tsx                          ← Browse listings
-// │   └── [id]/
-// │       └── page.tsx                      ← Property detail
-// ├── dashboard/
-// │   └── landlord/
-// │       ├── page.tsx                      ← Landlord dashboard
-// │       └── add/
-// │           └── page.tsx                  ← Add property form
-// └── api/
-//     ├── properties/
-//     │   ├── route.ts                      ← GET all, POST new
-//     │   └── [id]/
-//     │       └── route.ts                  ← GET one, PATCH update
-//     └── landlord/
-//         └── properties/
-//             └── route.ts                  ← GET landlord's own
-
-// components/
-// ├── layout/
-// │   └── Navbar.tsx
-// └── property/
-//     ├── PropertyCard.tsx
-//     └── AddPropertyForm.tsx
-
-// middleware.ts                             ← Route protection

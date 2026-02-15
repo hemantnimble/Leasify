@@ -21,7 +21,8 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="text-white font-bold text-xl">
-          Leasify
+        <img className="w-28 invert" src="/assets/logo.png" alt="" />
+          {/* Leasify */}
         </Link>
 
         {/* Nav links */}
