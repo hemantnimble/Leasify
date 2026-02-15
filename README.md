@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Leasify
+
+A decentralized rental platform built on Ethereum. Smart contracts handle
+deposit escrow, rent enforcement, and lease lifecycle — removing the need
+for intermediaries.
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, Tailwind CSS
+- **Auth**: NextAuth v5, SIWE (Sign-In With Ethereum)
+- **Database**: MongoDB Atlas, Prisma ORM
+- **Blockchain**: Solidity 0.8.20, Hardhat, Web3.js
+- **Wallet**: RainbowKit, WalletConnect v2, wagmi
+- **Network**: Sepolia Testnet
+- **Hosting**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- MetaMask or any WalletConnect wallet
+- MongoDB Atlas account
+- Alchemy account (Sepolia RPC)
+- WalletConnect Cloud account
 
-```bash
+### Installation
+
+git clone https://github.com/yourusername/leasify
+cd leasify
+npm install
+
+### Environment Variables
+
+Copy .env.example to .env.local and fill in:
+
+DATABASE_URL=
+NEXTAUTH_URL=
+NEXTAUTH_SECRET=
+ALCHEMY_SEPOLIA_URL=
+DEPLOYER_PRIVATE_KEY=
+LEASE_FACTORY_ADDRESS=
+NEXT_PUBLIC_LEASE_FACTORY_ADDRESS=
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
+ETHERSCAN_API_KEY=
+
+### Run Development Server
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Smart Contracts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+cd contracts-hardhat
+npm install
+npx hardhat test          # run all 23 tests
+npx hardhat run scripts/deploy.ts --network sepolia
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Contract Addresses (Sepolia)
 
-## Learn More
+LeaseFactory: 0x6379AE29a1d6113f5ff55d7d5307B5fa3D97ED12
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Browser → Next.js Frontend + API Routes → MongoDB Atlas
+                                        → Sepolia (via Alchemy)
