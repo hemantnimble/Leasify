@@ -41,4 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 #blockchain
-_leasify-blockchain/
+# _leasify-blockchain/
