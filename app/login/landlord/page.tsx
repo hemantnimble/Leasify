@@ -1,53 +1,140 @@
-// app/login/landlord/page.tsx
-
 "use client";
 
-import { useEffect }          from "react";
-import { useRouter }          from "next/navigation";
-import Link                   from "next/link";
-import { useWalletAuth }      from "@/hooks/useWalletAuth";
-import WalletConnectButton    from "@/components/auth/WalletConnectButton";
+// app/login/landlord/page.tsx
+
+import Link from "next/link";
+import WalletConnectButton from "@/components/auth/WalletConnectButton";
 
 export default function LandlordLoginPage() {
-  const router                              = useRouter();
-  const { isAuthenticated, role }           = useWalletAuth();
-
-  useEffect(() => {
-    if (isAuthenticated && role === "LANDLORD") {
-      router.push("/dashboard/landlord");
-    }
-  }, [isAuthenticated, role]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950">
-      <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl p-8">
-
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F8F8F6",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "48px 24px",
+        //: "'Sora', sans-serif",
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 28,
+          padding: "48px 44px",
+          width: "100%",
+          maxWidth: 440,
+          boxShadow: "0 8px 48px rgba(0,0,0,0.08)",
+          border: "1px solid #F0F0EE",
+        }}
+      >
+        {/* Back */}
         <Link
           href="/login"
-          className="text-gray-400 hover:text-white text-sm transition-colors"
+          style={{
+            fontSize: 13,
+            color: "#9CA3AF",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 32,
+            transition: "color 0.2s",
+          }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLElement).style.color = "#1A1A2E")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLElement).style.color = "#9CA3AF")
+          }
         >
           ← Back
         </Link>
 
-        <div className="text-center mt-6 mb-8">
-          <div className="text-5xl mb-4">🏢</div>
-          <h1 className="text-3xl font-bold text-white">Landlord Sign In</h1>
-          <p className="text-gray-400 mt-2 text-sm">
+        {/* Icon + header */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              background: "#F5F3FF",
+              borderRadius: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 30,
+              margin: "0 auto 20px",
+            }}
+          >
+            🔑
+          </div>
+          <h1
+            style={{
+              fontSize: 26,
+              fontWeight: 800,
+              letterSpacing: "-0.035em",
+              color: "#1A1A2E",
+              marginBottom: 6,
+            }}
+          >
+            Landlord Sign In
+          </h1>
+          <p style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 300 }}>
             List properties and manage lease agreements
           </p>
         </div>
 
-        {/* ✅ Single component handles everything */}
+        {/* Connect button — existing component, unchanged */}
         <WalletConnectButton role="LANDLORD" />
 
-        <div className="mt-6 bg-purple-900/20 border border-purple-800/40 rounded-xl p-4">
-          <p className="text-purple-400 text-xs font-medium mb-1">
-            First time?
+        {/* Info box */}
+        <div
+          style={{
+            marginTop: 20,
+            background: "#FAF5FF",
+            border: "1px solid #E9D5FF",
+            borderRadius: 14,
+            padding: "14px 16px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: "#7C3AED",
+              marginBottom: 4,
+              //: "'DM Mono', monospace",
+              letterSpacing: "0.04em",
+            }}
+          >
+            FIRST TIME?
+          </div>
+          <p
+            style={{
+              fontSize: 11,
+              color: "#6B7280",
+              lineHeight: 1.6,
+              fontWeight: 300,
+            }}
+          >
+            A new landlord account is created automatically using your wallet
+            address.
           </p>
-          <p className="text-gray-400 text-xs leading-relaxed">
-            A new landlord account will be created automatically using your
-            wallet address. Each wallet can only be registered as one role.
-          </p>
+          <div
+            style={{
+              marginTop: 8,
+              paddingTop: 8,
+              borderTop: "1px solid #E9D5FF",
+              fontSize: 11,
+              color: "#9CA3AF",
+              lineHeight: 1.6,
+              fontWeight: 300,
+            }}
+          >
+            ⚠️ Each wallet can only be registered under one role. Use a
+            separate wallet for your tenant account.
+          </div>
         </div>
       </div>
     </div>

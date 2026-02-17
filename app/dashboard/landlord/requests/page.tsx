@@ -1,6 +1,6 @@
-// app/dashboard/landlord/requests/page.tsx
-
 "use client";
+
+// app/dashboard/landlord/requests/page.tsx
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -25,22 +25,300 @@ interface Lease {
   };
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-yellow-900/50 text-yellow-400 border-yellow-800/50",
-  AWAITING_DEPOSIT: "bg-blue-900/50 text-blue-400 border-blue-800/50",
-  ACTIVE: "bg-green-900/50 text-green-400 border-green-800/50",
-  REJECTED: "bg-red-900/50 text-red-400 border-red-800/50",
-  COMPLETED: "bg-gray-800 text-gray-400 border-gray-700",
-  TERMINATED: "bg-gray-800 text-gray-400 border-gray-700",
+const STATUS_CONFIG: Record<
+  string,
+  { bg: string; color: string; border: string; label: string }
+> = {
+  PENDING: {
+    bg: "#FFFBEB",
+    color: "#D97706",
+    border: "#FDE68A",
+    label: "Pending",
+  },
+  AWAITING_DEPOSIT: {
+    bg: "#EFF6FF",
+    color: "#2D5BE3",
+    border: "#BFDBFE",
+    label: "Awaiting Deposit",
+  },
+  ACTIVE: {
+    bg: "#F0FDF4",
+    color: "#059669",
+    border: "#BBF7D0",
+    label: "Active",
+  },
+  REJECTED: {
+    bg: "#FEF2F2",
+    color: "#DC2626",
+    border: "#FECACA",
+    label: "Rejected",
+  },
+  COMPLETED: {
+    bg: "#F9FAFB",
+    color: "#6B7280",
+    border: "#E5E7EB",
+    label: "Completed",
+  },
+  TERMINATED: {
+    bg: "#F9FAFB",
+    color: "#6B7280",
+    border: "#E5E7EB",
+    label: "Terminated",
+  },
 };
+
+function LeaseCard({
+  lease,
+  onAccept,
+  onReject,
+  processingId,
+}: {
+  lease: Lease;
+  onAccept: (id: string) => void;
+  onReject: (id: string) => void;
+  processingId: string | null;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const cfg = STATUS_CONFIG[lease.status] || STATUS_CONFIG.COMPLETED;
+  const isProcessing = processingId === lease.id;
+
+  const shortTenant =
+    lease.tenant.walletAddress.slice(0, 6) +
+    "..." +
+    lease.tenant.walletAddress.slice(-4);
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "#fff",
+        borderRadius: 20,
+        border: "1px solid",
+        borderColor: hovered ? "#E5E7EB" : "#F0F0EE",
+        boxShadow: hovered
+          ? "0 8px 32px rgba(0,0,0,0.08)"
+          : "0 2px 12px rgba(0,0,0,0.04)",
+        transition: "all 0.3s ease",
+        overflow: "hidden",
+      }}
+    >
+      {/* Top row */}
+      <div style={{ padding: "20px 22px 0" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 16,
+            marginBottom: 16,
+          }}
+        >
+          {/* Property info */}
+          <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 14,
+                overflow: "hidden",
+                flexShrink: 0,
+                background: "#F3F4F6",
+              }}
+            >
+              <img
+                src={
+                  lease.property.images?.[0] ||
+                  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=200&q=80"
+                }
+                alt={lease.property.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
+            <div>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 15,
+                  color: "#1A1A2E",
+                  marginBottom: 2,
+                  //: "'Sora', sans-serif",
+                }}
+              >
+                {lease.property.title}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#9CA3AF",
+                  //: "'Sora', sans-serif",
+                }}
+              >
+                📍 {lease.property.location}
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#9CA3AF",
+                  //: "'DM Mono', monospace",
+                  marginTop: 3,
+                }}
+              >
+                Tenant: {lease.tenant.displayName || shortTenant}
+              </div>
+            </div>
+          </div>
+
+          {/* Status badge */}
+          <div
+            style={{
+              background: cfg.bg,
+              color: cfg.color,
+              border: `1px solid ${cfg.border}`,
+              padding: "5px 14px",
+              borderRadius: 100,
+              fontSize: 11,
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              //: "'Sora', sans-serif",
+            }}
+          >
+            {cfg.label}
+          </div>
+        </div>
+
+        {/* Terms grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 10,
+            marginBottom: 20,
+          }}
+        >
+          {[
+            { label: "Monthly Rent", value: `${lease.monthlyRent} ETH` },
+            { label: "Deposit", value: `${lease.securityDeposit} ETH` },
+            {
+              label: "Start",
+              value: new Date(lease.startDate).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }),
+            },
+            {
+              label: "End",
+              value: new Date(lease.endDate).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }),
+            },
+          ].map((item) => (
+            <div
+              key={item.label}
+              style={{
+                background: "#F8F8F6",
+                borderRadius: 12,
+                padding: "10px 12px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#9CA3AF",
+                  marginBottom: 4,
+                  //: "'Sora', sans-serif",
+                }}
+              >
+                {item.label}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#1A1A2E",
+                  //: "'Sora', sans-serif",
+                }}
+              >
+                {item.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Action bar — only for pending */}
+      {lease.status === "PENDING" && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            borderTop: "1px solid #F3F4F6",
+          }}
+        >
+          <button
+            onClick={() => onAccept(lease.id)}
+            disabled={isProcessing}
+            style={{
+              background: "transparent",
+              border: "none",
+              borderRight: "1px solid #F3F4F6",
+              padding: "14px",
+              fontSize: 13,
+              fontWeight: 600,
+              color: isProcessing ? "#9CA3AF" : "#059669",
+              cursor: isProcessing ? "not-allowed" : "pointer",
+              //: "'Sora', sans-serif",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              if (!isProcessing)
+                (e.currentTarget as HTMLElement).style.background = "#F0FDF4";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+            }}
+          >
+            {isProcessing ? "Processing..." : "✓ Accept Lease"}
+          </button>
+          <button
+            onClick={() => onReject(lease.id)}
+            disabled={isProcessing}
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "14px",
+              fontSize: 13,
+              fontWeight: 600,
+              color: isProcessing ? "#9CA3AF" : "#DC2626",
+              cursor: isProcessing ? "not-allowed" : "pointer",
+              //: "'Sora', sans-serif",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              if (!isProcessing)
+                (e.currentTarget as HTMLElement).style.background = "#FEF2F2";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "transparent";
+            }}
+          >
+            {isProcessing ? "Processing..." : "✕ Reject"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function LandlordRequestsPage() {
   const [leases, setLeases] = useState<Lease[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"PENDING" | "ALL">("PENDING");
   const [processingId, setProcessingId] = useState<string | null>(null);
-  // const [processingId, setProcessingId] = useState<string | null>(null);
-  const [processingStep, setProcessingStep] = useState<string>("");
 
   const fetchLeases = async () => {
     try {
@@ -59,40 +337,25 @@ export default function LandlordRequestsPage() {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     fetchLeases();
   }, [activeTab]);
 
   const handleAccept = async (leaseId: string) => {
     setProcessingId(leaseId);
-    setProcessingStep("Accepting lease...");
-
     try {
-      setProcessingStep("Deploying smart contract on Sepolia...");
-
       const res = await fetch("/api/lease/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leaseId }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Failed to accept");
-
-      setProcessingStep("Done!");
-
-      // Show contract address briefly before refreshing
-      alert(
-        `✅ Lease accepted!\n\nSmart contract deployed at:\n${data.contractAddress}\n\nView on Etherscan:\nhttps://sepolia.etherscan.io/address/${data.contractAddress}`
-      );
-
+      if (!res.ok) throw new Error(data.error);
       fetchLeases();
-
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      alert(err.message);
     } finally {
       setProcessingId(null);
-      setProcessingStep("");
     }
   };
 
@@ -114,173 +377,172 @@ export default function LandlordRequestsPage() {
     }
   };
 
-  
   const pendingCount = leases.filter((l) => l.status === "PENDING").length;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <Link
-            href="/dashboard/landlord"
-            className="text-gray-400 hover:text-white text-sm transition-colors"
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F8F8F6",
+        padding: "40px 48px 80px",
+        //: "'Sora', sans-serif",
+      }}
+    >
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+
+        {/* Header */}
+        <Link
+          href="/dashboard/landlord"
+          style={{
+            fontSize: 13,
+            color: "#9CA3AF",
+            textDecoration: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginBottom: 32,
+            transition: "color 0.2s",
+          }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLElement).style.color = "#1A1A2E")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLElement).style.color = "#9CA3AF")
+          }
+        >
+          ← Dashboard
+        </Link>
+
+        <div style={{ marginBottom: 32 }}>
+          <div
+            style={{
+              fontSize: 11,
+              //: "'DM Mono', monospace",
+              letterSpacing: "0.1em",
+              color: "#9CA3AF",
+              marginBottom: 8,
+            }}
           >
-            ← Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold text-white mt-2">Lease Requests</h1>
-          <p className="text-gray-400 mt-1">
-            Review and respond to tenant lease requests
+            LANDLORD · REQUESTS
+          </div>
+          <h1
+            style={{
+              fontSize: 32,
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+              color: "#1A1A2E",
+              lineHeight: 1.1,
+            }}
+          >
+            Lease Requests
+          </h1>
+          <p style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 300, marginTop: 6 }}>
+            Review and respond to tenant requests
           </p>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        {(["PENDING", "ALL"] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-xl text-sm font-medium transition-colors ${activeTab === tab
-              ? "bg-blue-600 text-white"
-              : "bg-gray-800 text-gray-400 hover:text-white"
-              }`}
-          >
-            {tab === "PENDING" ? `Pending${pendingCount > 0 && activeTab === "PENDING" ? ` (${pendingCount})` : ""}` : "All Requests"}
-          </button>
-        ))}
-      </div>
-
-      {/* Lease Cards */}
-      {isLoading ? (
-        <div className="text-center py-20 text-gray-500">Loading...</div>
-      ) : leases.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-gray-500 text-lg">No lease requests found</p>
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
+          {(["PENDING", "ALL"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: "9px 22px",
+                borderRadius: 100,
+                border: "1.5px solid",
+                borderColor: activeTab === tab ? "#1A1A2E" : "#E5E7EB",
+                background: activeTab === tab ? "#1A1A2E" : "#fff",
+                color: activeTab === tab ? "#fff" : "#6B7280",
+                fontSize: 12,
+                fontWeight: 500,
+                cursor: "pointer",
+                //: "'Sora', sans-serif",
+                transition: "all 0.2s",
+              }}
+            >
+              {tab === "PENDING"
+                ? `Pending${pendingCount > 0 ? ` (${pendingCount})` : ""}`
+                : "All Requests"}
+            </button>
+          ))}
         </div>
-      ) : (
-        <div className="space-y-4">
-          {leases.map((lease) => {
-            const shortTenant =
-              lease.tenant.walletAddress.slice(0, 6) +
-              "..." +
-              lease.tenant.walletAddress.slice(-4);
 
-            return (
+        {/* Content */}
+        {isLoading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {[...Array(2)].map((_, i) => (
               <div
-                key={lease.id}
-                className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+                key={i}
+                style={{
+                  background: "#fff",
+                  borderRadius: 20,
+                  height: 180,
+                  overflow: "hidden",
+                  border: "1px solid #F0F0EE",
+                }}
               >
-                <div className="flex items-start justify-between gap-4">
-
-                  {/* Left: Property + Tenant info */}
-                  <div className="flex gap-4 items-start">
-                    <div className="w-14 h-14 bg-gray-800 rounded-xl overflow-hidden flex-shrink-0">
-                      {lease.property.images.length > 0 ? (
-                        <img
-                          src={lease.property.images[0]}
-                          alt={lease.property.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xl">
-                          🏠
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold">
-                        {lease.property.title}
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        📍 {lease.property.location}
-                      </p>
-                      <p className="text-gray-500 text-xs mt-1 font-mono">
-                        Tenant: {lease.tenant.displayName || shortTenant}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right: Status badge */}
-                  <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full border flex-shrink-0 ${STATUS_COLORS[lease.status] || STATUS_COLORS.COMPLETED
-                      }`}
-                  >
-                    {lease.status.replace("_", " ")}
-                  </span>
-                </div>
-
-                {/* Lease Terms */}
-                <div className="mt-4 grid grid-cols-4 gap-3">
-                  {[
-                    {
-                      label: "Monthly Rent",
-                      value: `${lease.monthlyRent} ETH`,
-                    },
-                    {
-                      label: "Deposit",
-                      value: `${lease.securityDeposit} ETH`,
-                    },
-                    {
-                      label: "Start",
-                      value: new Date(lease.startDate).toLocaleDateString(),
-                    },
-                    {
-                      label: "End",
-                      value: new Date(lease.endDate).toLocaleDateString(),
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="bg-gray-800/50 rounded-xl p-3"
-                    >
-                      <p className="text-gray-500 text-xs">{item.label}</p>
-                      <p className="text-white text-sm font-medium mt-1">
-                        {item.value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Action Buttons — only for PENDING */}
-                {lease.status === "PENDING" && (
-                  <div className="mt-4 flex gap-3">
-                    <button
-                      onClick={() => handleAccept(lease.id)}
-                      disabled={processingId === lease.id}
-                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-green-900 disabled:cursor-not-allowed text-white font-medium py-2 rounded-xl transition-colors text-sm"
-                    >
-                      {processingId === lease.id ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          {processingStep || "Processing..."}
-                        </span>
-                      ) : (
-                        "✓ Accept"
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleReject(lease.id)}
-                      disabled={processingId === lease.id}
-                      className="flex-1 bg-gray-800 hover:bg-red-900/50 disabled:cursor-not-allowed text-gray-300 hover:text-red-400 border border-gray-700 hover:border-red-800 font-medium py-2 rounded-xl transition-colors text-sm"
-                    >
-                      {processingId === lease.id ? "Processing..." : "✕ Reject"}
-                    </button>
-                  </div>
-                )}
-
-                <div className="mt-3 pt-3 border-t border-gray-800">
-                  <Link
-                    href={`/dashboard/lease/${lease.id}`}
-                    className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
-                  >
-                    View Full Details →
-                  </Link>
-                </div>
+                <div
+                  style={{
+                    height: "100%",
+                    background:
+                      "linear-gradient(90deg,#F3F4F6 25%,#E5E7EB 50%,#F3F4F6 75%)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 1.5s infinite",
+                  }}
+                />
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+            <style>{`
+              @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+              }
+            `}</style>
+          </div>
+        ) : leases.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "80px 0",
+              background: "#fff",
+              borderRadius: 24,
+              border: "1px solid #F0F0EE",
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
+            <p
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: "#1A1A2E",
+                marginBottom: 8,
+              }}
+            >
+              {activeTab === "PENDING"
+                ? "No pending requests"
+                : "No lease requests yet"}
+            </p>
+            <p style={{ fontSize: 13, color: "#9CA3AF" }}>
+              {activeTab === "PENDING"
+                ? "You're all caught up"
+                : "Requests from tenants will appear here"}
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {leases.map((lease) => (
+              <LeaseCard
+                key={lease.id}
+                lease={lease}
+                onAccept={handleAccept}
+                onReject={handleReject}
+                processingId={processingId}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

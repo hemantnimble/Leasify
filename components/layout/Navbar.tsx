@@ -16,75 +16,59 @@ export default function Navbar() {
     : null;
 
   return (
-    <nav className="border-b border-gray-800 bg-gray-950 px-6 py-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <nav className="border-b border-gray-100 bg-white px-6 py-4 fixed w-full z-50">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
 
         {/* Logo */}
-        <Link href="/" className="text-white font-bold text-xl">
-        <img className="w-28 invert" src="/assets/logo.png" alt="" />
-          {/* Leasify */}
+        <Link href="/" className="flex items-center">
+          <img className="w-28 invert" src="/assets/logo.png" alt="Leasify" />
         </Link>
 
-        {/* Nav links */}
-        <div className="flex items-center gap-6">
+        {/* Nav links (centered) */}
+        <div className="flex items-center gap-6 flex-1 justify-center">
           <Link
             href="/properties"
-            className="text-gray-400 hover:text-white text-sm transition-colors"
+            className="text-gray-400 hover:text-black text-sm transition-colors"
           >
             Browse Properties
           </Link>
 
-          {/* Landlord links */}
           {isAuthenticated && role === "LANDLORD" && (
             <>
-              <Link
-                href="/dashboard/landlord"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
+              <Link href="/dashboard/landlord" className="nav-link">
                 Dashboard
               </Link>
-              <Link
-                href="/dashboard/landlord/requests"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
+              <Link href="/dashboard/landlord/requests" className="nav-link">
                 Requests
               </Link>
-              <Link
-                href="/dashboard/landlord/leases"
-                className="text-gray-400 hover:text-white text-sm transition-colors"
-              >
+              <Link href="/dashboard/landlord/leases" className="nav-link">
                 Active Leases
               </Link>
             </>
           )}
 
-          {/* Tenant links */}
           {isAuthenticated && role === "TENANT" && (
-            <Link
-              href="/dashboard/tenant"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
-            >
+            <Link href="/dashboard/tenant" className="nav-link">
               My Leases
             </Link>
           )}
         </div>
 
-        {/* Wallet section */}
+        {/* Wallet section (right aligned) */}
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl transition-colors"
+                className="flex items-center gap-2 bg-gray-200 px-3 py-2 rounded-xl transition-colors"
               >
-                <span className="text-gray-300 text-xs font-mono">
+                <span className="text-black text-xs font-mono">
                   {shortAddress}
                 </span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  role === "LANDLORD"
-                    ? "bg-purple-900/50 text-purple-400"
-                    : "bg-blue-900/50 text-blue-400"
-                }`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${role === "LANDLORD"
+                    ? "bg-black text-purple-400"
+                    : "bg-black text-blue-400"
+                  }`}>
                   {role}
                 </span>
                 <span className="text-gray-500 text-xs">▾</span>
@@ -99,12 +83,12 @@ export default function Navbar() {
                     onClick={() => setShowMenu(false)}
                   />
 
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-gray-900 border border-gray-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-gray-200 border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
 
                     {/* Wallet address display */}
-                    <div className="px-4 py-3 border-b border-gray-800">
+                    <div className="px-4 py-3 border-b border-gray-400">
                       <p className="text-gray-500 text-xs">Connected as</p>
-                      <p className="text-white text-xs font-mono mt-0.5">
+                      <p className="text-black text-xs font-mono mt-0.5">
                         {shortAddress}
                       </p>
                     </div>
@@ -113,7 +97,7 @@ export default function Navbar() {
                     <Link
                       href="/dashboard/profile"
                       onClick={() => setShowMenu(false)}
-                      className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
+                      className="flex items-center gap-2 px-4 py-3 text-black hover:text-white hover:bg-gray-400 text-sm transition-colors"
                     >
                       👤 Profile
                     </Link>
@@ -124,7 +108,7 @@ export default function Navbar() {
                         ? "/dashboard/landlord"
                         : "/dashboard/tenant"}
                       onClick={() => setShowMenu(false)}
-                      className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
+                      className="flex items-center gap-2 px-4 py-3 text-black hover:text-white hover:bg-gray-400 text-sm transition-colors"
                     >
                       📊 Dashboard
                     </Link>
@@ -135,14 +119,14 @@ export default function Navbar() {
                         <Link
                           href="/dashboard/landlord/requests"
                           onClick={() => setShowMenu(false)}
-                          className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
+                          className="flex items-center gap-2 px-4 py-3 text-black hover:text-white hover:bg-gray-400 text-sm transition-colors"
                         >
                           📋 Lease Requests
                         </Link>
                         <Link
                           href="/dashboard/landlord/leases"
                           onClick={() => setShowMenu(false)}
-                          className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
+                          className="flex items-center gap-2 px-4 py-3 text-black hover:text-white hover:bg-gray-400 text-sm transition-colors"
                         >
                           🏠 Active Leases
                         </Link>
@@ -154,13 +138,13 @@ export default function Navbar() {
                       <Link
                         href="/dashboard/tenant"
                         onClick={() => setShowMenu(false)}
-                        className="flex items-center gap-2 px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 text-sm transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 text-black hover:text-white hover:bg-gray-400 text-sm transition-colors"
                       >
                         📄 My Leases
                       </Link>
                     )}
 
-                    <div className="border-t border-gray-800" />
+                    <div className="border-t border-gray-400" />
 
                     {/* Disconnect */}
                     <button
@@ -168,7 +152,7 @@ export default function Navbar() {
                         setShowMenu(false);
                         disconnectWallet();
                       }}
-                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-red-400 hover:text-red-300 hover:bg-gray-800 text-sm transition-colors"
+                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-red-400 hover:text-red-300 hover:bg-gray-400 text-sm transition-colors"
                     >
                       🔌 Disconnect
                     </button>
@@ -185,7 +169,9 @@ export default function Navbar() {
             </Link>
           )}
         </div>
+
       </div>
     </nav>
+
   );
 }
