@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi";
 import { useWalletAuth } from "@/hooks/useWalletAuth";
 
 interface WalletConnectButtonProps {
@@ -18,6 +19,8 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
     isAuthenticated,
     role: userRole,
   } = useWalletAuth();
+
+  const { isConnected } = useAccount();
   const router = useRouter();
 
   // Gate: only allow redirect after a clean successful connect
@@ -30,12 +33,10 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
   const handleConnect = async () => {
     setSafeToRedirect(false);
     await connectWallet(role);
-    // connectWallet sets error internally if mismatch — only open gate if no error
     setSafeToRedirect(true);
   };
 
   useEffect(() => {
-    // Don't redirect if: not authenticated, no role, gate is closed, or there's an error showing
     if (isAuthenticated && userRole && safeToRedirect && !error) {
       if (userRole === "LANDLORD") {
         router.push("/dashboard/landlord");
@@ -44,6 +45,19 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
       }
     }
   }, [isAuthenticated, userRole, safeToRedirect, error, router]);
+
+  // Button label reflects the current step
+  const buttonLabel = () => {
+    if (isLoading) return "Connecting...";
+    if (!isConnected) return "Connect Wallet";
+    return `Sign in as ${isLandlord ? "Landlord" : "Tenant"}`;
+  };
+
+  const buttonIcon = () => {
+    if (isLoading) return null;
+    if (!isConnected) return "🔗";
+    return isLandlord ? "🔑" : "🏠";
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -59,7 +73,6 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
             padding: "12px 16px",
             fontSize: 12,
             lineHeight: 1.6,
-            // fontFamily: "'Sora', sans-serif",
           }}
         >
           {error}
@@ -84,7 +97,6 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
           alignItems: "center",
           justifyContent: "center",
           gap: 10,
-          // fontFamily: "'Sora', sans-serif",
           transition: "background 0.2s, transform 0.2s, box-shadow 0.2s",
           letterSpacing: "0.01em",
         }}
@@ -116,7 +128,9 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
             Connecting...
           </>
         ) : (
-          <>🦊 Connect MetaMask as {isLandlord ? "Landlord" : "Tenant"}</>
+          <>
+            {buttonIcon()} {buttonLabel()}
+          </>
         )}
       </button>
 
@@ -145,12 +159,13 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
           style={{
             fontSize: 11,
             color: accent,
-            // fontFamily: "'DM Mono', monospace",
             letterSpacing: "0.04em",
             fontWeight: 500,
           }}
         >
-          Signing as {role} · Sepolia Testnet
+          {isConnected
+            ? `Wallet connected · Sign to authenticate`
+            : `MetaMask, WalletConnect, Coinbase & more`}
         </span>
       </div>
 
@@ -159,7 +174,6 @@ export default function WalletConnectButton({ role }: WalletConnectButtonProps) 
           fontSize: 11,
           color: "#D1D5DB",
           textAlign: "center",
-          // fontFamily: "'Sora', sans-serif",
           fontWeight: 300,
         }}
       >
