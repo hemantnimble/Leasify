@@ -7,14 +7,15 @@ import Link from "next/link";
 import { useGsap } from "@/hooks/useGsap";
 import { useMagnetic } from "@/hooks/useMagnetic";
 import {
-    Gloock
+    Dancing_Script
 } from 'next/font/google';
 
-const gloock
-    = Gloock({
-          subsets: ['cyrillic-ext'],
-        //   display: 'swap',
-        weight: ['400'], // required for non-variable fonts
+const dancingScript
+    = Dancing_Script
+({
+          subsets: ['latin'],
+        //   displ0y: 'swap',
+        weight: ['700'], // required for non-variable fonts
     });
 
 
@@ -179,7 +180,7 @@ export function HeroSection() {
                 </div>
 
                 {/* Headline — split chars */}
-                <h1 className={gloock.className}
+                <h1 className={dancingScript.className}
                     style={{
                         fontSize: "clamp(44px, 5.5vw, 76px)",
                         fontWeight: 800,
