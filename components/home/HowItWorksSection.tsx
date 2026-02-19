@@ -44,7 +44,7 @@ export function HowItWorksSection() {
   const [active, setActive] = useState(0);
 
   return (
-    <section style={{ background: "#fff", padding: "100px 48px" }}>
+    <section style={{ background: "#fff" }} className="mx-5 lg:mx-12 py-4 lg:py-0 mb-16">
       <div style={{ maxWidth: 1280, margin: "0 auto" }}>
 
         {/* Header */}

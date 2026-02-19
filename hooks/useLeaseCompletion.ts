@@ -15,10 +15,29 @@ export function useLeaseCompletion({
   contractAddress,
   leaseId,
 }: UseLeaseCompletionProps) {
-  const [isLoading, setIsLoading]             = useState(false);
-  const [error, setError]                     = useState<string | null>(null);
-  const [txHash, setTxHash]                   = useState<string | null>(null);
-  const [step, setStep]                       = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [txHash, setTxHash]       = useState<string | null>(null);
+  const [step, setStep]           = useState<string>("");
+
+  // ── Shared: get provider + address ──
+  const getWallet = async () => {
+    const provider = (window as any).ethereum;
+    if (!provider) {
+      throw new Error("No wallet connected. Please connect your wallet first.");
+    }
+    const web3 = getClientWeb3();
+    let accounts: string[];
+    try {
+      accounts = await provider.request({ method: "eth_requestAccounts" });
+    } catch {
+      accounts = await web3.eth.getAccounts();
+    }
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No account found. Please connect your wallet.");
+    }
+    return { web3, callerAddress: web3.utils.toChecksumAddress(accounts[0]) };
+  };
 
   // ── Complete lease after endDate ──
   const completeLease = async () => {
@@ -31,35 +50,25 @@ export function useLeaseCompletion({
       await ensureSepoliaNetwork();
 
       setStep("Connecting wallet...");
-      const web3     = getClientWeb3();
-      const accounts = await window.ethereum!.request({
-        method: "eth_requestAccounts",
-      });
-      const callerAddress = web3.utils.toChecksumAddress(accounts[0]);
+      const { web3, callerAddress } = await getWallet();
 
       const leaseContract = new web3.eth.Contract(
         LEASE_AGREEMENT_ABI as any,
         contractAddress
       );
 
-      // Verify contract is ACTIVE
       setStep("Verifying contract state...");
-      const contractStatus = await leaseContract.methods
-        .status()
-        .call() as string;
-
+      const contractStatus = await leaseContract.methods.status().call() as string;
       if (contractStatus.toString() !== "1") {
         throw new Error("Lease is not active.");
       }
 
-      // Estimate gas
       setStep("Estimating gas...");
       const gasEstimate = await leaseContract.methods
         .completeLease()
         .estimateGas({ from: callerAddress });
 
-      // Send tx
-      setStep("Waiting for MetaMask confirmation...");
+      setStep("Waiting for wallet confirmation...");
       const tx = await leaseContract.methods.completeLease().send({
         from: callerAddress,
         gas: Math.round(Number(gasEstimate) * 1.2).toString(),
@@ -68,7 +77,6 @@ export function useLeaseCompletion({
       const hash = tx.transactionHash as string;
       setTxHash(hash);
 
-      // Notify backend
       setStep("Finalizing lease...");
       const res = await fetch("/api/lease/complete", {
         method: "POST",
@@ -88,7 +96,7 @@ export function useLeaseCompletion({
         err.message?.includes("User denied") ||
         err.message?.includes("rejected")
       ) {
-        setError("Transaction rejected in MetaMask.");
+        setError("Transaction rejected.");
       } else {
         setError(err.message || "Failed to complete lease");
       }
@@ -109,11 +117,7 @@ export function useLeaseCompletion({
       await ensureSepoliaNetwork();
 
       setStep("Connecting wallet...");
-      const web3     = getClientWeb3();
-      const accounts = await window.ethereum!.request({
-        method: "eth_requestAccounts",
-      });
-      const callerAddress = web3.utils.toChecksumAddress(accounts[0]);
+      const { web3, callerAddress } = await getWallet();
 
       const leaseContract = new web3.eth.Contract(
         LEASE_AGREEMENT_ABI as any,
@@ -125,7 +129,7 @@ export function useLeaseCompletion({
         .agreeToEarlyTermination()
         .estimateGas({ from: callerAddress });
 
-      setStep("Waiting for MetaMask confirmation...");
+      setStep("Waiting for wallet confirmation...");
       const tx = await leaseContract.methods
         .agreeToEarlyTermination()
         .send({
@@ -136,7 +140,6 @@ export function useLeaseCompletion({
       const hash = tx.transactionHash as string;
       setTxHash(hash);
 
-      // Notify backend
       setStep("Recording termination agreement...");
       const res = await fetch("/api/lease/terminate", {
         method: "POST",
@@ -156,7 +159,7 @@ export function useLeaseCompletion({
         err.message?.includes("User denied") ||
         err.message?.includes("rejected")
       ) {
-        setError("Transaction rejected in MetaMask.");
+        setError("Transaction rejected.");
       } else {
         setError(err.message || "Failed to agree to termination");
       }

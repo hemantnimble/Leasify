@@ -4,12 +4,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
+const isValidObjectId = (id: string) => /^[a-f\d]{24}$/i.test(id);
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+
+    // Guard against route conflicts like /api/lease/tenant hitting this handler
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid lease ID" }, { status: 400 });
+    }
+
     const session = await auth();
 
     if (!session?.user?.walletAddress) {

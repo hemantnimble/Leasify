@@ -266,9 +266,9 @@ export function PropertiesSection() {
   const displayed = filtered.slice(0, 4);
 
   return (
-    <section
+    <section className="mx-5 lg:mx-12"
       style={{
-        padding: "80px 48px 100px",
+        padding: "80px 20px 100px",
         maxWidth: 1280,
         margin: "0 auto",
       }}

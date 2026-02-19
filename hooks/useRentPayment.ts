@@ -10,7 +10,7 @@ interface UseRentPaymentProps {
     contractAddress: string;
     monthlyRent: number;    // in ETH
     leaseId: string;
-    paymentId: string;      // MongoDB payment record ID
+    paymentId: string;
 }
 
 export function useRentPayment({
@@ -34,12 +34,25 @@ export function useRentPayment({
             setStep("Checking network...");
             await ensureSepoliaNetwork();
 
-            // ── Step 2: Get wallet ──
+            // ── Step 2: Get wallet — works for MetaMask + WalletConnect ──
             setStep("Connecting wallet...");
+            const provider = (window as any).ethereum;
+            if (!provider) {
+                throw new Error("No wallet connected. Please connect your wallet first.");
+            }
             const web3 = getClientWeb3();
-            const accounts = await window.ethereum!.request({
-                method: "eth_requestAccounts",
-            });
+
+            let accounts: string[];
+            try {
+                accounts = await provider.request({ method: "eth_requestAccounts" });
+            } catch {
+                accounts = await web3.eth.getAccounts();
+            }
+
+            if (!accounts || accounts.length === 0) {
+                throw new Error("No account found. Please connect your wallet.");
+            }
+
             const tenantAddress = web3.utils.toChecksumAddress(accounts[0]);
 
             // ── Step 3: Get contract ──
@@ -55,14 +68,14 @@ export function useRentPayment({
                 throw new Error("Lease is not active. Cannot pay rent.");
             }
 
-            // ── Step 5: Check if late (warn user) ──
+            // ── Step 5: Check if late ──
             const isLate = await leaseContract.methods.isRentOverdue().call();
             const penalty = await leaseContract.methods.getCurrentPenalty().call();
             const penaltyEth = Number(penalty) / 1e18;
 
             if (isLate) {
                 setStep(`Late payment — ${penaltyEth.toFixed(6)} ETH penalty will be recorded`);
-                await new Promise((r) => setTimeout(r, 2000)); // show warning for 2s
+                await new Promise((r) => setTimeout(r, 2000));
             }
 
             // ── Step 6: Convert ETH to Wei ──
@@ -77,8 +90,8 @@ export function useRentPayment({
                     value: rentWei,
                 });
 
-            // ── Step 8: Send via MetaMask ──
-            setStep("Waiting for MetaMask confirmation...");
+            // ── Step 8: Send transaction ──
+            setStep("Waiting for wallet confirmation...");
             const tx = await leaseContract.methods.payRent().send({
                 from: tenantAddress,
                 value: rentWei,
@@ -114,7 +127,7 @@ export function useRentPayment({
                 err.message?.includes("User denied") ||
                 err.message?.includes("rejected")
             ) {
-                setError("Transaction rejected in MetaMask.");
+                setError("Transaction rejected.");
             } else {
                 setError(err.message || "Failed to pay rent");
             }

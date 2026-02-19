@@ -33,11 +33,26 @@ export function useDepositPayment({
             await ensureSepoliaNetwork();
 
             // ── Step 2: Get web3 + wallet ──
+            // Works for both desktop MetaMask (window.ethereum) and
+            // mobile WalletConnect (provider injected by wagmi into window.ethereum)
             setStep("Connecting wallet...");
+            const provider = (window as any).ethereum;
+            if (!provider) {
+                throw new Error("No wallet connected. Please connect your wallet first.");
+            }
             const web3 = getClientWeb3();
-            const accounts = await window.ethereum!.request({
-                method: "eth_requestAccounts",
-            });
+
+            let accounts: string[];
+            try {
+                accounts = await provider.request({ method: "eth_requestAccounts" });
+            } catch {
+                accounts = await web3.eth.getAccounts();
+            }
+
+            if (!accounts || accounts.length === 0) {
+                throw new Error("No account found. Please connect your wallet.");
+            }
+
             const tenantAddress = web3.utils.toChecksumAddress(accounts[0]);
 
             // ── Step 3: Get contract instance ──
@@ -70,8 +85,8 @@ export function useDepositPayment({
                     value: depositWei,
                 });
 
-            // ── Step 7: Send transaction via MetaMask ──
-            setStep("Waiting for MetaMask confirmation...");
+            // ── Step 7: Send transaction ──
+            setStep("Waiting for wallet confirmation...");
 
             const tx = await leaseContract.methods.payDeposit().send({
                 from: tenantAddress,
@@ -105,13 +120,12 @@ export function useDepositPayment({
             return { success: true, txHash: hash };
 
         } catch (err: any) {
-            // MetaMask rejection
             if (
                 err.code === 4001 ||
                 err.message?.includes("User denied") ||
                 err.message?.includes("rejected")
             ) {
-                setError("Transaction rejected in MetaMask.");
+                setError("Transaction rejected.");
             } else {
                 setError(err.message || "Failed to pay deposit");
             }
