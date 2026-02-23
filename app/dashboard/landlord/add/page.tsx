@@ -5,16 +5,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ImageUploader from "@/components/ui/ImageUploader";
 
 const FIELD_STYLE = {
   width: "100%",
   background: "#F8F8F6",
-  border: "1.5px solid #E5E7EB",
+  borderWidth: "1.5px",
+  borderStyle: "solid",
+  borderColor: "#E5E7EB",
   color: "#1A1A2E",
   borderRadius: 12,
   padding: "13px 16px",
   fontSize: 13,
-  //: "'Sora', sans-serif",
   fontWeight: 400,
   outline: "none",
   transition: "border-color 0.2s",
@@ -27,7 +29,6 @@ const LABEL_STYLE = {
   fontWeight: 600,
   color: "#4B5563",
   marginBottom: 7,
-  //: "'Sora', sans-serif",
   letterSpacing: "0.01em",
 };
 
@@ -36,6 +37,7 @@ export default function AddPropertyPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -44,7 +46,6 @@ export default function AddPropertyPage() {
     monthlyRent: "",
     securityDeposit: "",
     minimumLeaseDuration: "",
-    images: "",
   });
 
   const handleChange = (
@@ -55,8 +56,16 @@ export default function AddPropertyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
+
+    // Validate at least one image was uploaded
+    if (uploadedImageUrls.length === 0) {
+      setError("Please upload at least one property image.");
+      return;
+    }
+
+    // Check all images are done uploading (not still pending)
+    setIsLoading(true);
 
     try {
       const payload = {
@@ -64,9 +73,7 @@ export default function AddPropertyPage() {
         monthlyRent: parseFloat(formData.monthlyRent),
         securityDeposit: parseFloat(formData.securityDeposit),
         minimumLeaseDuration: parseInt(formData.minimumLeaseDuration),
-        images: formData.images
-          ? formData.images.split(",").map((url) => url.trim())
-          : [],
+        images: uploadedImageUrls,
       };
 
       const res = await fetch("/api/properties", {
@@ -96,7 +103,6 @@ export default function AddPropertyPage() {
         minHeight: "100vh",
         background: "#F8F8F6",
         padding: "40px 48px 80px",
-        //: "'Sora', sans-serif",
       }}
     >
       <div style={{ maxWidth: 680, margin: "0 auto" }}>
@@ -129,7 +135,6 @@ export default function AddPropertyPage() {
           <div
             style={{
               fontSize: 11,
-              //: "'DM Mono', monospace",
               letterSpacing: "0.1em",
               color: "#9CA3AF",
               marginBottom: 8,
@@ -242,7 +247,6 @@ export default function AddPropertyPage() {
                     Monthly Rent
                     <span
                       style={{
-                        //: "'DM Mono', monospace",
                         color: "#9CA3AF",
                         fontWeight: 400,
                         marginLeft: 6,
@@ -271,7 +275,6 @@ export default function AddPropertyPage() {
                     Security Deposit
                     <span
                       style={{
-                        //: "'DM Mono', monospace",
                         color: "#9CA3AF",
                         fontWeight: 400,
                         marginLeft: 6,
@@ -303,7 +306,6 @@ export default function AddPropertyPage() {
                   Minimum Lease Duration
                   <span
                     style={{
-                      //: "'DM Mono', monospace",
                       color: "#9CA3AF",
                       fontWeight: 400,
                       marginLeft: 6,
@@ -327,10 +329,10 @@ export default function AddPropertyPage() {
                 />
               </div>
 
-              {/* Images */}
+              {/* ── Image Upload ── */}
               <div>
                 <label style={LABEL_STYLE}>
-                  Image URLs
+                  Property Images
                   <span
                     style={{
                       color: "#9CA3AF",
@@ -339,17 +341,12 @@ export default function AddPropertyPage() {
                       fontSize: 11,
                     }}
                   >
-                    (comma-separated, optional)
+                    (up to 6 · first image is the cover)
                   </span>
                 </label>
-                <input
-                  name="images"
-                  value={formData.images}
-                  onChange={handleChange}
-                  onFocus={() => setFocused("images")}
-                  onBlur={() => setFocused(null)}
-                  placeholder="https://..., https://..."
-                  style={focusStyle("images")}
+                <ImageUploader
+                  onChange={setUploadedImageUrls}
+                  maxImages={6}
                 />
               </div>
 
@@ -366,7 +363,6 @@ export default function AddPropertyPage() {
                   <div
                     style={{
                       fontSize: 11,
-                      //: "'DM Mono', monospace",
                       color: "#2D5BE3",
                       letterSpacing: "0.08em",
                       marginBottom: 10,
@@ -390,6 +386,12 @@ export default function AddPropertyPage() {
                           ? `${formData.minimumLeaseDuration} months`
                           : "—",
                       ],
+                      [
+                        "Images",
+                        uploadedImageUrls.length > 0
+                          ? `${uploadedImageUrls.length} uploaded ✓`
+                          : "None yet",
+                      ],
                     ].map(([k, v]) => (
                       <div
                         key={k}
@@ -404,7 +406,6 @@ export default function AddPropertyPage() {
                           style={{
                             color: "#1A1A2E",
                             fontWeight: 600,
-                            //: "'DM Mono', monospace",
                           }}
                         >
                           {v}
@@ -429,7 +430,6 @@ export default function AddPropertyPage() {
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: isLoading ? "not-allowed" : "pointer",
-                  //: "'Sora', sans-serif",
                   transition: "background 0.2s, box-shadow 0.2s",
                   marginTop: 4,
                 }}

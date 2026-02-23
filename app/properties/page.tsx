@@ -82,7 +82,7 @@ function PropertyCard({
         </div>
 
         {/* Like */}
-        <button
+        {/* <button
           onClick={(e) => {
             e.preventDefault();
             setLiked(!liked);
@@ -112,7 +112,7 @@ function PropertyCard({
           }
         >
           {liked ? "❤️" : "🤍"}
-        </button>
+        </button> */}
 
         {/* Price */}
         <div

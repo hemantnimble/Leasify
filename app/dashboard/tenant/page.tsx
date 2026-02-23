@@ -395,7 +395,7 @@ function TenantDashboardContent() {
         padding: "32px 24px",
       }}
     >
-      <div style={{ maxWidth: 860, margin: "0 auto" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto" ,marginTop: "3rem" }}>
         {/* Header */}
         <div
           style={{
