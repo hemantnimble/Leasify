@@ -1,4 +1,4 @@
-// auth.ts  ← FULL UPDATED FILE
+// auth.ts
 
 import NextAuth                      from "next-auth";
 import CredentialsProvider           from "next-auth/providers/credentials";
@@ -23,8 +23,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          // ── Parse SIWE message ──
-          // ✅ Handle both JSON string and plain string formats
           let siweMessage: SiweMessage;
           try {
             siweMessage = new SiweMessage(
@@ -38,21 +36,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          console.log("SIWE message parsed:", {
-            address: siweMessage.address,
-            nonce:   siweMessage.nonce,
-            domain:  siweMessage.domain,
-            chainId: siweMessage.chainId,
-          });
-
-          // ── Verify nonce ──
           const isValidNonce = verifyAndConsumeNonce(siweMessage.nonce);
           if (!isValidNonce) {
             console.error("Invalid or expired nonce:", siweMessage.nonce);
             return null;
           }
 
-          // ── Verify signature ──
           const result = await siweMessage.verify({
             signature: credentials.signature as string,
           });
@@ -66,25 +55,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const incomingRole  =
             credentials.role === "LANDLORD" ? "LANDLORD" : "TENANT";
 
-          console.log("Auth verified:", { walletAddress, incomingRole });
-
-          // ── Find or create user ──
           let user = await prisma.user.findUnique({
             where: { walletAddress },
           });
 
           if (!user) {
-            // New user — create with requested role
             user = await prisma.user.create({
               data: { walletAddress, role: incomingRole },
             });
-            console.log("Created new user:", user.id);
           } else if (user.role !== incomingRole) {
-            // ── Role mismatch — signal to frontend ──
-            console.warn("Role mismatch:", {
-              stored:   user.role,
-              incoming: incomingRole,
-            });
             return {
               id:            "ROLE_MISMATCH",
               walletAddress: "",
@@ -123,7 +102,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.walletAddress = (user as any).walletAddress;
         token.role          = (user as any).role;
         token.userId        = user.id;
-        // Clear any previous error
         delete token.error;
       }
       return token;
@@ -137,6 +115,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.walletAddress = token.walletAddress as string;
         session.user.role          = token.role          as string;
         session.user.userId        = token.userId        as string;
+      }
+      // ── Forward demo flag ──
+      if (token.isDemo) {
+        (session.user as any).isDemo = true;
       }
       return session;
     },

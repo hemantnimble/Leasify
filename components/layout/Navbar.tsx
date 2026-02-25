@@ -30,7 +30,7 @@ export default function Navbar() {
           { href: "/properties", label: "Browse Properties" },
           { href: "/dashboard/tenant", label: "My Leases" },
         ]
-      : [{ href: "/properties", label: "Browse Properties" }];
+      : [{ href: "/properties", label: "Browse Properties" },];
 
   const menuItems =
     role === "LANDLORD"
@@ -58,6 +58,7 @@ export default function Navbar() {
 
           {/* Desktop nav links (centered) */}
           <div className="hidden md:flex items-center gap-6 flex-1 justify-center">
+            <Link href='/demo'><button className="text-gray-400 hover:text-black text-sm transition-colors">Demo Mode</button></Link>
             <Link href="/properties" className="text-gray-400 hover:text-black text-sm transition-colors">
               Browse Properties
             </Link>
@@ -184,7 +185,6 @@ export default function Navbar() {
                             </Link>
                           ))}
                         </div>
-
                         {/* Disconnect */}
                         <div style={{ borderTop: "1px solid #F3F4F6", padding: "6px 0" }}>
                           <button

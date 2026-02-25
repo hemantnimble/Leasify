@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import {
     Nunito
 } from 'next/font/google';
+import DemoBanner from "@/components/ui/DemoBanner";
 
 const urbanist
     = Nunito({
@@ -39,6 +40,8 @@ export default async function RootLayout({
           {/* No padding here — homepage goes full width, other pages wrap themselves */}
           <main>
             <ErrorBoundary>
+              <DemoBanner />
+
               {children}
             </ErrorBoundary>
           </main>
