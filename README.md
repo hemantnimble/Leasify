@@ -1,64 +1,44 @@
-# Leasify
+# 🏠 Leasify - Web3 Real Estate Leasing Platform
 
-A decentralized rental platform built on Ethereum. Smart contracts handle
-deposit escrow, rent enforcement, and lease lifecycle — removing the need
-for intermediaries.
+Leasify is a decentralized real estate application that bridges the gap between landlords and tenants using blockchain technology. By integrating smart contracts, Web3 wallet authentication, and cryptocurrency payments, Leasify provides a secure, transparent, and automated way to handle property listings, lease agreements, deposit handling, and rent payments.
 
-## Tech Stack
+## ✨ Key Features
 
-- **Frontend**: Next.js 15, Tailwind CSS
-- **Auth**: NextAuth v5, SIWE (Sign-In With Ethereum)
-- **Database**: MongoDB Atlas, Prisma ORM
-- **Blockchain**: Solidity 0.8.20, Hardhat, Web3.js
-- **Wallet**: RainbowKit, WalletConnect v2, wagmi
-- **Network**: Sepolia Testnet
-- **Hosting**: Vercel
+* **🛡️ Web3 Authentication:** Secure user login and identity verification using Wallet Connection (via Wagmi and NextAuth).
+* **📝 Smart Contract Lease Agreements:** Lease agreements are deployed as individual, immutable smart contracts via a `LeaseFactory`, ensuring trustless execution of terms.
+* **💸 Crypto Payments:** Tenants can securely pay security deposits and monthly rent directly via their Web3 wallets.
+* **👑 Role-Based Dashboards:** * **Landlords:** Add and manage property listings, review lease requests, and track active leases.
+  * **Tenants:** Browse available properties, request leases, sign agreements, and manage monthly rent payments.
+* **⚡ Automated Enforcement:** Smart contracts transparently handle lease termination, deposit returns, and rent payment tracking.
+* **✨ Animated UI:** Smooth, engaging user interface built with Tailwind CSS, GSAP, and custom scroll-based velocity animations.
 
-## Getting Started
+## 🛠️ Tech Stack
 
-### Prerequisites
-- Node.js 18+
-- MetaMask or any WalletConnect wallet
-- MongoDB Atlas account
-- Alchemy account (Sepolia RPC)
-- WalletConnect Cloud account
+**Frontend & Backend (Next.js App Router):**
+* **Framework:** Next.js (v14/v15) & React
+* **Styling:** Tailwind CSS
+* **Animations:** GSAP & Custom Hooks (`useGsap`, `useTilt`, `useMagnetic`)
+* **Database:** PostgreSQL with Prisma ORM (`prisma/schema.prisma`)
+* **Authentication:** NextAuth.js configured for Ethereum/Wallet login
 
-### Installation
+**Blockchain & Web3:**
+* **Smart Contracts:** Solidity (`LeaseAgreement.sol`, `LeaseFactory.sol`)
+* **Development Environment:** Hardhat (`/_leasify-blockchain`)
+* **Client Integration:** Wagmi, Viem, and Ethers.js
+* **Network:** Compatible with Localhost (Hardhat), Ethereum testnets (Sepolia), and Mainnet.
 
-git clone https://github.com/yourusername/leasify
-cd leasify
-npm install
+## 📂 Project Structure
 
-### Environment Variables
-
-Copy .env.example to .env.local and fill in:
-
-DATABASE_URL=
-NEXTAUTH_URL=
-NEXTAUTH_SECRET=
-ALCHEMY_SEPOLIA_URL=
-DEPLOYER_PRIVATE_KEY=
-LEASE_FACTORY_ADDRESS=
-NEXT_PUBLIC_LEASE_FACTORY_ADDRESS=
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
-ETHERSCAN_API_KEY=
-
-### Run Development Server
-
-npm run dev
-
-### Smart Contracts
-
-cd contracts-hardhat
-npm install
-npx hardhat test          # run all 23 tests
-npx hardhat run scripts/deploy.ts --network sepolia
-
-## Contract Addresses (Sepolia)
-
-LeaseFactory: 0x6379AE29a1d6113f5ff55d7d5307B5fa3D97ED12
-
-## Architecture
-
-Browser → Next.js Frontend + API Routes → MongoDB Atlas
-                                        → Sepolia (via Alchemy)
+```text
+leasify/
+├── _leasify-blockchain/     # Hardhat project: Solidity contracts, tests, deployment scripts
+├── app/                     # Next.js App Router: Pages, API routes, Layouts
+│   ├── api/                 # REST APIs for Auth, Properties, Leases, Users
+│   ├── dashboard/           # Role-based dashboards (Landlord/Tenant/Profile)
+│   ├── login/               # Wallet authentication pages
+│   └── properties/          # Public property listings and lease request flows
+├── components/              # Reusable UI, Auth, Blockchain, and Home components
+├── hooks/                   # Custom React hooks (Web3 payments, GSAP animations)
+├── lib/                     # Utility configurations (Prisma client, Wagmi, NextAuth)
+├── prisma/                  # Database schema and migrations
+└── utils/blockchain/        # Web3 Client/Server utilities and Contract ABIs
