@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       {/* Logo */}
       <div style={{ textAlign: "center", marginBottom: 48 }}>
-        <div
+        {/* <div
           style={{
             width: 52,
             height: 52,
@@ -57,7 +57,7 @@ export default function LoginPage() {
           }}
         >
           🏠
-        </div>
+        </div> */}
         <h1
           style={{
             fontSize: 32,
@@ -72,6 +72,21 @@ export default function LoginPage() {
         <p style={{ fontSize: 14, color: "#9CA3AF", fontWeight: 300 }}>
           Choose how you want to sign in
         </p>
+        <Link href="/demo" style={{ textDecoration: "none" }}>
+          <div
+            style={{
+              background: "#EEF2FF",
+              color: "#2D5BE3",
+              padding: "10px 16px",
+              borderRadius: 12,
+              fontSize: 12,
+              fontWeight: 600,
+              marginTop: 8,
+            }}
+          >
+            Demo Login
+          </div>
+        </Link>
       </div>
 
       {/* Role cards */}
