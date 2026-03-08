@@ -76,7 +76,8 @@ export default function LoginPage() {
           <div
             style={{
               background: "#EEF2FF",
-              color: "#2D5BE3",
+              color: "#ff0000",
+              textDecorationLine: "underline",
               padding: "10px 16px",
               borderRadius: 12,
               fontSize: 12,

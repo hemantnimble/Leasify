@@ -75,21 +75,7 @@ export default function DemoPage() {
 
       {/* Logo + header */}
       <div style={{ textAlign: "center", marginBottom: 40 }}>
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            background: "#1A1A2E",
-            borderRadius: 18,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 26,
-            margin: "0 auto 16px",
-          }}
-        >
-          🏠
-        </div>
+        
         <h1
           style={{
             fontSize: 28,

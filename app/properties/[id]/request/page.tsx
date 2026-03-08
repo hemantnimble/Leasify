@@ -219,7 +219,7 @@ export default function LeaseRequestPage() {
       style={{
         minHeight: "100vh",
         background: "#F8F8F6",
-        padding: "40px 48px 80px",
+        padding: "40px 20px 80px",
         //: "'Sora', sans-serif",
       }}
     >

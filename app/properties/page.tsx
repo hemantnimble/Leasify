@@ -17,13 +17,7 @@ interface Property {
   landlord: { walletAddress: string; displayName?: string | null };
 }
 
-function PropertyCard({
-  p,
-  index,
-}: {
-  p: Property;
-  index: number;
-}) {
+function PropertyCard({ p, index }: { p: Property; index: number }) {
   const [liked, setLiked] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -75,44 +69,10 @@ function PropertyCard({
             fontSize: 11,
             fontWeight: 600,
             color: "#1A1A2E",
-            //: "'Sora', sans-serif",
           }}
         >
           {p.status === "AVAILABLE" ? "Available" : p.status}
         </div>
-
-        {/* Like */}
-        {/* <button
-          onClick={(e) => {
-            e.preventDefault();
-            setLiked(!liked);
-          }}
-          style={{
-            position: "absolute",
-            top: 14,
-            right: 14,
-            width: 34,
-            height: 34,
-            borderRadius: "50%",
-            background: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(8px)",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 15,
-            transition: "transform 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.transform = "scale(1.15)")
-          }
-          onMouseLeave={(e) =>
-            ((e.currentTarget as HTMLElement).style.transform = "scale(1)")
-          }
-        >
-          {liked ? "❤️" : "🤍"}
-        </button> */}
 
         {/* Price */}
         <div
@@ -126,13 +86,10 @@ function PropertyCard({
             borderRadius: 100,
             fontSize: 13,
             fontWeight: 700,
-            //: "'Sora', sans-serif",
           }}
         >
           {p.monthlyRent} ETH
-          <span style={{ fontWeight: 300, opacity: 0.6, fontSize: 10 }}>
-            /mo
-          </span>
+          <span style={{ fontWeight: 300, opacity: 0.6, fontSize: 10 }}>/mo</span>
         </div>
       </div>
 
@@ -144,7 +101,6 @@ function PropertyCard({
             fontSize: 15,
             color: "#1A1A2E",
             marginBottom: 3,
-            //: "'Sora', sans-serif",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -152,14 +108,7 @@ function PropertyCard({
         >
           {p.title}
         </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: "#9CA3AF",
-            marginBottom: 14,
-            //: "'Sora', sans-serif",
-          }}
-        >
+        <div style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 14 }}>
           📍 {p.location}
         </div>
 
@@ -184,24 +133,10 @@ function PropertyCard({
                 borderRight: i < 1 ? "1px solid #F3F4F6" : "none",
               }}
             >
-              <div
-                style={{
-                  fontWeight: 700,
-                  fontSize: 13,
-                  color: "#1A1A2E",
-                  //: "'Sora', sans-serif",
-                }}
-              >
+              <div style={{ fontWeight: 700, fontSize: 13, color: "#1A1A2E" }}>
                 {s.val}
               </div>
-              <div
-                style={{
-                  fontSize: 10,
-                  color: "#9CA3AF",
-                  marginTop: 2,
-                  //: "'Sora', sans-serif",
-                }}
-              >
+              <div style={{ fontSize: 10, color: "#9CA3AF", marginTop: 2 }}>
                 {s.label}
               </div>
             </div>
@@ -221,7 +156,6 @@ function PropertyCard({
             fontSize: 13,
             fontWeight: 600,
             textDecoration: "none",
-            //: "'Sora', sans-serif",
             transition: "background 0.2s",
           }}
           onMouseEnter={(e) =>
@@ -279,311 +213,333 @@ export default function PropertiesPage() {
   const hasFilters = locationFilter || maxRentFilter;
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#F8F8F6",
-        padding: "40px 48px 80px",
-        //: "'Sora', sans-serif",
-      }}
-    >
-      <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+    <>
+      <style>{`
+        .props-page {
+          padding: 40px 48px 80px;
+        }
+        .props-search-bar {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .props-search-location {
+          flex: 1;
+          min-width: 200px;
+        }
+        .props-search-rent {
+          width: 160px;
+        }
+        .props-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 24px;
+        }
 
-        {/* Header */}
-        <div style={{ marginBottom: 36 }}>
-          <div
-            style={{
-              fontSize: 11,
-              //: "'DM Mono', monospace",
-              letterSpacing: "0.1em",
-              color: "#9CA3AF",
-              marginBottom: 8,
-            }}
-          >
-            ALL LISTINGS
-          </div>
-          <h1
-            style={{
-              fontSize: 36,
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
-              color: "#1A1A2E",
-              lineHeight: 1.1,
-              marginBottom: 6,
-            }}
-          >
-            Browse Properties
-          </h1>
-          <p style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 300 }}>
-            Blockchain-secured lease agreements on every listing
-          </p>
-        </div>
+        @media (max-width: 768px) {
+          .props-page {
+            padding: 20px 16px 80px;
+          }
+          .props-search-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+          }
+          .props-search-location {
+            flex: unset;
+            min-width: unset;
+            width: 100%;
+          }
+          .props-search-rent {
+            width: 100%;
+          }
+          .props-search-bar button {
+            width: 100%;
+          }
+          .props-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+          }
+        }
 
-        {/* Search bar */}
-        <form onSubmit={handleSearch}>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 18,
-              padding: "16px 20px",
-              border: "1px solid #F0F0EE",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              flexWrap: "wrap",
-              marginBottom: 32,
-            }}
-          >
-            {/* Location */}
-            <input
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-              onFocus={() => setFocused("location")}
-              onBlur={() => setFocused(null)}
-              placeholder="🔍  Search by location..."
-              style={{
-                flex: 1,
-                minWidth: 200,
-                background: "#F8F8F6",
-                border: "1.5px solid",
-                borderColor: focused === "location" ? "#1A1A2E" : "#E5E7EB",
-                color: "#1A1A2E",
-                borderRadius: 12,
-                padding: "11px 14px",
-                fontSize: 13,
-                //: "'Sora', sans-serif",
-                outline: "none",
-                transition: "border-color 0.2s",
-              }}
-            />
+        @media (max-width: 480px) {
+          .props-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+        }
+      `}</style>
 
-            {/* Max rent */}
-            <input
-              type="number"
-              step="0.001"
-              value={maxRentFilter}
-              onChange={(e) => setMaxRentFilter(e.target.value)}
-              onFocus={() => setFocused("rent")}
-              onBlur={() => setFocused(null)}
-              placeholder="Max rent (ETH)"
-              style={{
-                width: 160,
-                background: "#F8F8F6",
-                border: "1.5px solid",
-                borderColor: focused === "rent" ? "#1A1A2E" : "#E5E7EB",
-                color: "#1A1A2E",
-                borderRadius: 12,
-                padding: "11px 14px",
-                fontSize: 13,
-                //: "'Sora', sans-serif",
-                outline: "none",
-                transition: "border-color 0.2s",
-              }}
-            />
+      <div className="props-page" style={{ minHeight: "100vh", background: "#F8F8F6" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto",marginTop: "38px" }}>
 
-            {/* Search button */}
-            <button
-              type="submit"
-              style={{
-                background: "#1A1A2E",
-                color: "#fff",
-                border: "none",
-                padding: "11px 28px",
-                borderRadius: 12,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                //: "'Sora', sans-serif",
-                transition: "background 0.2s",
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = "#2D2D4E")
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = "#1A1A2E")
-              }
-            >
-              Search
-            </button>
-
-            {/* Clear */}
-            {hasFilters && (
-              <button
-                type="button"
-                onClick={handleClear}
-                style={{
-                  background: "transparent",
-                  color: "#9CA3AF",
-                  border: "1.5px solid #E5E7EB",
-                  padding: "11px 20px",
-                  borderRadius: 12,
-                  fontSize: 13,
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  //: "'Sora', sans-serif",
-                  transition: "all 0.2s",
-                  whiteSpace: "nowrap",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = "#1A1A2E";
-                  el.style.color = "#1A1A2E";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = "#E5E7EB";
-                  el.style.color = "#9CA3AF";
-                }}
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </form>
-
-        {/* Results count */}
-        {!isLoading && (
-          <div
-            style={{
-              fontSize: 12,
-              color: "#9CA3AF",
-              marginBottom: 20,
-              //: "'DM Mono', monospace",
-            }}
-          >
-            {properties.length} propert{properties.length === 1 ? "y" : "ies"} found
-            {hasFilters && (
-              <span style={{ color: "#2D5BE3" }}> · filtered</span>
-            )}
-          </div>
-        )}
-
-        {/* Grid */}
-        {isLoading ? (
-          <>
-            <style>{`
-              @keyframes shimmer {
-                0% { background-position: -200% 0; }
-                100% { background-position: 200% 0; }
-              }
-            `}</style>
+          {/* Header */}
+          <div style={{ marginBottom: 28 }}>
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                gap: 24,
+                fontSize: 11,
+                letterSpacing: "0.1em",
+                color: "#9CA3AF",
+                marginBottom: 8,
               }}
             >
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
+              ALL LISTINGS
+            </div>
+            <h1
+              style={{
+                fontSize: 36,
+                fontWeight: 800,
+                letterSpacing: "-0.04em",
+                color: "#1A1A2E",
+                lineHeight: 1.1,
+                marginBottom: 6,
+              }}
+            >
+              Browse Properties
+            </h1>
+            <p style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 300 }}>
+              Blockchain-secured lease agreements on every listing
+            </p>
+          </div>
+
+          {/* Search bar */}
+          <form onSubmit={handleSearch}>
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 18,
+                padding: "16px 20px",
+                border: "1px solid #F0F0EE",
+                boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+                marginBottom: 24,
+              }}
+            >
+              <div className="props-search-bar">
+                {/* Location */}
+                <input
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  onFocus={() => setFocused("location")}
+                  onBlur={() => setFocused(null)}
+                  placeholder="🔍  Search by location..."
+                  className="props-search-location"
                   style={{
-                    background: "#fff",
-                    borderRadius: 22,
-                    overflow: "hidden",
-                    border: "1px solid #F0F0EE",
+                    background: "#F8F8F6",
+                    border: "1.5px solid",
+                    borderColor: focused === "location" ? "#1A1A2E" : "#E5E7EB",
+                    color: "#1A1A2E",
+                    borderRadius: 12,
+                    padding: "11px 14px",
+                    fontSize: 13,
+                    outline: "none",
+                    transition: "border-color 0.2s",
                   }}
+                />
+
+                {/* Max rent */}
+                <input
+                  type="number"
+                  step="0.001"
+                  value={maxRentFilter}
+                  onChange={(e) => setMaxRentFilter(e.target.value)}
+                  onFocus={() => setFocused("rent")}
+                  onBlur={() => setFocused(null)}
+                  placeholder="Max rent (ETH)"
+                  className="props-search-rent"
+                  style={{
+                    background: "#F8F8F6",
+                    border: "1.5px solid",
+                    borderColor: focused === "rent" ? "#1A1A2E" : "#E5E7EB",
+                    color: "#1A1A2E",
+                    borderRadius: 12,
+                    padding: "11px 14px",
+                    fontSize: 13,
+                    outline: "none",
+                    transition: "border-color 0.2s",
+                  }}
+                />
+
+                {/* Search button */}
+                <button
+                  type="submit"
+                  style={{
+                    background: "#1A1A2E",
+                    color: "#fff",
+                    border: "none",
+                    padding: "11px 28px",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "background 0.2s",
+                    whiteSpace: "nowrap",
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background = "#2D2D4E")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background = "#1A1A2E")
+                  }
                 >
-                  <div
+                  Search
+                </button>
+
+                {/* Clear */}
+                {hasFilters && (
+                  <button
+                    type="button"
+                    onClick={handleClear}
                     style={{
-                      height: 210,
-                      background:
-                        "linear-gradient(90deg,#F3F4F6 25%,#E5E7EB 50%,#F3F4F6 75%)",
-                      backgroundSize: "200% 100%",
-                      animation: "shimmer 1.5s infinite",
+                      background: "transparent",
+                      color: "#9CA3AF",
+                      border: "1.5px solid #E5E7EB",
+                      padding: "11px 20px",
+                      borderRadius: 12,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      whiteSpace: "nowrap",
                     }}
-                  />
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.borderColor = "#1A1A2E";
+                      el.style.color = "#1A1A2E";
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLElement;
+                      el.style.borderColor = "#E5E7EB";
+                      el.style.color = "#9CA3AF";
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+
+          {/* Results count */}
+          {!isLoading && (
+            <div style={{ fontSize: 12, color: "#9CA3AF", marginBottom: 20 }}>
+              {properties.length} propert{properties.length === 1 ? "y" : "ies"} found
+              {hasFilters && <span style={{ color: "#2D5BE3" }}> · filtered</span>}
+            </div>
+          )}
+
+          {/* Grid */}
+          {isLoading ? (
+            <>
+              <style>{`
+                @keyframes shimmer {
+                  0% { background-position: -200% 0; }
+                  100% { background-position: 200% 0; }
+                }
+              `}</style>
+              <div className="props-grid">
+                {[...Array(6)].map((_, i) => (
                   <div
+                    key={i}
                     style={{
-                      padding: "16px 18px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 8,
+                      background: "#fff",
+                      borderRadius: 22,
+                      overflow: "hidden",
+                      border: "1px solid #F0F0EE",
                     }}
                   >
                     <div
                       style={{
-                        height: 16,
-                        width: "70%",
-                        background: "#F3F4F6",
-                        borderRadius: 6,
+                        height: 210,
+                        background:
+                          "linear-gradient(90deg,#F3F4F6 25%,#E5E7EB 50%,#F3F4F6 75%)",
+                        backgroundSize: "200% 100%",
+                        animation: "shimmer 1.5s infinite",
                       }}
                     />
                     <div
                       style={{
-                        height: 12,
-                        width: "50%",
-                        background: "#F3F4F6",
-                        borderRadius: 6,
+                        padding: "16px 18px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 8,
                       }}
-                    />
+                    >
+                      <div
+                        style={{
+                          height: 16,
+                          width: "70%",
+                          background: "#F3F4F6",
+                          borderRadius: 6,
+                        }}
+                      />
+                      <div
+                        style={{
+                          height: 12,
+                          width: "50%",
+                          background: "#F3F4F6",
+                          borderRadius: 6,
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : properties.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "80px 0",
-              background: "#fff",
-              borderRadius: 24,
-              border: "1px solid #F0F0EE",
-            }}
-          >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🏠</div>
-            <p
+                ))}
+              </div>
+            </>
+          ) : properties.length === 0 ? (
+            <div
               style={{
-                fontSize: 16,
-                fontWeight: 700,
-                color: "#1A1A2E",
-                marginBottom: 8,
+                textAlign: "center",
+                padding: "80px 0",
+                background: "#fff",
+                borderRadius: 24,
+                border: "1px solid #F0F0EE",
               }}
             >
-              No properties found
-            </p>
-            <p style={{ fontSize: 13, color: "#9CA3AF" }}>
-              {hasFilters
-                ? "Try adjusting your search filters"
-                : "No listings available yet"}
-            </p>
-            {hasFilters && (
-              <button
-                onClick={handleClear}
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🏠</div>
+              <p
                 style={{
-                  marginTop: 20,
-                  background: "#1A1A2E",
-                  color: "#fff",
-                  border: "none",
-                  padding: "11px 28px",
-                  borderRadius: 12,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  //: "'Sora', sans-serif",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: "#1A1A2E",
+                  marginBottom: 8,
                 }}
               >
-                Clear Filters
-              </button>
-            )}
-          </div>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: 24,
-            }}
-          >
-            {properties.map((p, i) => (
-              <PropertyCard key={p.id} p={p} index={i} />
-            ))}
-          </div>
-        )}
+                No properties found
+              </p>
+              <p style={{ fontSize: 13, color: "#9CA3AF" }}>
+                {hasFilters
+                  ? "Try adjusting your search filters"
+                  : "No listings available yet"}
+              </p>
+              {hasFilters && (
+                <button
+                  onClick={handleClear}
+                  style={{
+                    marginTop: 20,
+                    background: "#1A1A2E",
+                    color: "#fff",
+                    border: "none",
+                    padding: "11px 28px",
+                    borderRadius: 12,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="props-grid">
+              {properties.map((p, i) => (
+                <PropertyCard key={p.id} p={p} index={i} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
