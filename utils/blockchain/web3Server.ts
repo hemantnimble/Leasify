@@ -37,25 +37,48 @@ export function getDeployerAccount() {
 
   return account;
 }
-
-// ─── Get LeaseFactory contract instance ───
+function sanitizeAddress(address: string): string {
+  // Strip whitespace, zero-width chars, BOM, etc.
+  const cleaned = address.replace(/[^\x20-\x7E]/g, "").trim();
+  // Web3 toChecksumAddress requires a valid 0x-prefixed 40-hex-char address
+  if (!/^0x[0-9a-fA-F]{40}$/.test(cleaned)) {
+    throw new Error(`Malformed Ethereum address in environment: "${cleaned}"`);
+  }
+  return cleaned;
+}
 
 export function getFactoryContract() {
   const web3 = getServerWeb3();
-  const address = process.env.LEASE_FACTORY_ADDRESS;
-  if (!address) throw new Error("LEASE_FACTORY_ADDRESS not set in .env");
+  const raw = process.env.LEASE_FACTORY_ADDRESS;
+  if (!raw) throw new Error("LEASE_FACTORY_ADDRESS not set in .env");
 
-  const checksummed = web3.utils.toChecksumAddress(address); // ← add this
-  return new web3.eth.Contract(LEASE_FACTORY_ABI as any, checksummed);
+  const address = sanitizeAddress(raw);
+  return new web3.eth.Contract(LEASE_FACTORY_ABI as any, address);
 }
-
-// ─── Get a specific LeaseAgreement contract instance ───
 
 export function getLeaseContract(contractAddress: string) {
   const web3 = getServerWeb3();
-  const checksummed = web3.utils.toChecksumAddress(contractAddress); // ← add this
-  return new web3.eth.Contract(LEASE_AGREEMENT_ABI as any, checksummed);
+  const address = sanitizeAddress(contractAddress);
+  return new web3.eth.Contract(LEASE_AGREEMENT_ABI as any, address);
 }
+// ─── Get LeaseFactory contract instance ───
+
+// export function getFactoryContract() {
+//   const web3 = getServerWeb3();
+//   const address = process.env.LEASE_FACTORY_ADDRESS;
+//   if (!address) throw new Error("LEASE_FACTORY_ADDRESS not set in .env");
+
+//   const checksummed = web3.utils.toChecksumAddress(address); // ← add this
+//   return new web3.eth.Contract(LEASE_FACTORY_ABI as any, checksummed);
+// }
+
+// // ─── Get a specific LeaseAgreement contract instance ───
+
+// export function getLeaseContract(contractAddress: string) {
+//   const web3 = getServerWeb3();
+//   const checksummed = web3.utils.toChecksumAddress(contractAddress); // ← add this
+//   return new web3.eth.Contract(LEASE_AGREEMENT_ABI as any, checksummed);
+// }
 
 // ─── Convert ETH to Wei ───
 
