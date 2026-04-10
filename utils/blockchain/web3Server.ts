@@ -43,22 +43,18 @@ export function getDeployerAccount() {
 export function getFactoryContract() {
   const web3 = getServerWeb3();
   const address = process.env.LEASE_FACTORY_ADDRESS;
+  if (!address) throw new Error("LEASE_FACTORY_ADDRESS not set in .env");
 
-  if (!address) {
-    throw new Error("LEASE_FACTORY_ADDRESS not set in .env");
-  }
-
-  return new web3.eth.Contract(LEASE_FACTORY_ABI as any, address);
+  const checksummed = web3.utils.toChecksumAddress(address); // ← add this
+  return new web3.eth.Contract(LEASE_FACTORY_ABI as any, checksummed);
 }
 
 // ─── Get a specific LeaseAgreement contract instance ───
 
 export function getLeaseContract(contractAddress: string) {
   const web3 = getServerWeb3();
-  return new web3.eth.Contract(
-    LEASE_AGREEMENT_ABI as any,
-    contractAddress
-  );
+  const checksummed = web3.utils.toChecksumAddress(contractAddress); // ← add this
+  return new web3.eth.Contract(LEASE_AGREEMENT_ABI as any, checksummed);
 }
 
 // ─── Convert ETH to Wei ───
